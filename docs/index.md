@@ -8,7 +8,7 @@ You'll build **RV32u**, a multi-cycle core for a 14-instruction subset of RV32I 
 - Prerequisites: combinational and sequential logic, finite-state machines, basic Verilog or SystemVerilog, and the command line. Some C helps.
 - Total time: about 40 hours, the sum of the times in the course path (one focused week).
 
-This site holds the specification and the milestone writeups. The code is in the project's [GitHub repo](https://github.com/uoftasic/rv32i-micro). The site is published to the repo's GitHub Pages, and so is the chip: the [layout viewer](viewer/index.html) opens the latest Tiny Tapeout GDS build in the Tiny Tapeout 3D viewer, with a [2D render](viewer/gds_render.png) beside it. (Both appear after the first successful `gds` workflow run on `main`.)
+This site holds the specification and the milestone writeups. The code is in the project's [GitHub repo](https://github.com/Sheffield-Chip-Design-Team/rv32i-micro). The site is published to the repo's GitHub Pages, and so is the chip: the [layout viewer](viewer/index.html) opens the latest Tiny Tapeout GDS build in the Tiny Tapeout 3D viewer, with a [2D render](viewer/gds_render.png) beside it. (Both appear after the first successful `gds` workflow run on `main`.)
 
 ## Course path
 

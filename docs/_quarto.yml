@@ -24,7 +24,7 @@ project:
 website:
   title: "CPU Design Mini-Project - RV32u"
   description: "Design, verify and tape out a 14-instruction multi-cycle RISC-V core on Tiny Tapeout IHP"
-  repo-url: https://github.com/uoftasic/rv32i-micro
+  repo-url: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro
   repo-subdir: docs
   repo-actions: [issue]
   search: true
@@ -49,7 +49,7 @@ website:
         icon: file-pdf
         href: "rv32i-micro-course.pdf"
       - icon: github
-        href: https://github.com/uoftasic/rv32i-micro
+        href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro
         aria-label: GitHub
   sidebar:
     style: docked
@@ -103,13 +103,13 @@ website:
           - text: "Layout viewer (latest GDS)"
             href: viewer/index.html
           - text: "RTL (src/)"
-            href: https://github.com/uoftasic/rv32i-micro/tree/main/src
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/src
           - text: "Tests (verif/)"
-            href: https://github.com/uoftasic/rv32i-micro/tree/main/verif
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/verif
           - text: "Software (sw/)"
-            href: https://github.com/uoftasic/rv32i-micro/tree/main/sw
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/sw
           - text: "Design record (DESIGN.md)"
-            href: https://github.com/uoftasic/rv32i-micro/blob/main/DESIGN.md
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/blob/main/DESIGN.md
 
 filters:
   - _filters/course.lua

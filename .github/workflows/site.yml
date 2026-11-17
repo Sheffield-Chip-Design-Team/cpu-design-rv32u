@@ -54,8 +54,8 @@ jobs:
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
           SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: |
-          grep -rlF 'https://github.com/uoftasic/rv32i-micro' docs --include='*.md' --include='*.yml' \
-            | xargs -r sed -i "s#https://github.com/uoftasic/rv32i-micro#${REPO_URL}#g"
+          grep -rlF 'https://github.com/Sheffield-Chip-Design-Team/rv32i-micro' docs --include='*.md' --include='*.yml' \
+            | xargs -r sed -i "s#https://github.com/Sheffield-Chip-Design-Team/rv32i-micro#${REPO_URL}#g"
           if [ -n "$SITE_URL" ]; then
             sed -i "s#^website:#website:\n  site-url: ${SITE_URL}/#" docs/_quarto.yml
           fi
