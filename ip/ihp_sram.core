@@ -1,0 +1,18 @@
+CAPI=2:
+name: sharc:ip:ihp_sram:0.1.0
+description: >
+  Behavioural models of the IHP SG13G2/SG13CMOS5L SRAM macros used by RV32u, from the
+  ip/IHP-Open-PDK submodule (scripts/init-submodules.sh). Simulation only: compile with
+  FUNCTIONAL and SIM defined. Synthesis and Tiny Tapeout use the black boxes in
+  src/sram_bb.sv and the views the GDS action installs with the PDK.
+
+filesets:
+  models:
+    files:
+      - IHP-Open-PDK/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_core_behavioral_bm_bist.v: {file_type: verilogSource}
+      - IHP-Open-PDK/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_512x32_c2_bm_bist.v: {file_type: verilogSource}
+      - IHP-Open-PDK/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_512x16_c2_bm_bist.v: {file_type: verilogSource}
+
+targets:
+  default:
+    filesets: [models]

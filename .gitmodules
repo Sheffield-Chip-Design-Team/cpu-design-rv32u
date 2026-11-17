@@ -1,3 +1,5 @@
 [submodule "ip/IHP-Open-PDK"]
 	path = ip/IHP-Open-PDK
 	url = https://github.com/IHP-GmbH/IHP-Open-PDK
+	shallow = true
+	update = none
