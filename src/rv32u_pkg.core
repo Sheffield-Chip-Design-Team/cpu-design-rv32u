@@ -1,0 +1,12 @@
+CAPI=2:
+name: sharc:rv32u:pkg:0.1.0
+description: RV32u shared definitions (encodings, ALU/immediate selectors, memory map)
+
+filesets:
+  rtl:
+    files:
+      - rv32u_pkg.sv: {file_type: systemVerilogSource}
+
+targets:
+  default:
+    filesets: [rtl]
