@@ -1,0 +1,44 @@
+{
+ "signal": [
+  {
+   "name": "clk",
+   "wave": "p...."
+  },
+  {
+   "name": "mem_valid",
+   "wave": "01.0."
+  },
+  {
+   "name": "mem_addr",
+   "wave": "x=.x.",
+   "data": [
+    "addr"
+   ]
+  },
+  {
+   "name": "mem_wstrb",
+   "wave": "x=.x.",
+   "data": [
+    "1111"
+   ]
+  },
+  {
+   "name": "mem_wdata",
+   "wave": "x=.x.",
+   "data": [
+    "data"
+   ]
+  },
+  {
+   "name": "mem_ready",
+   "wave": "0.10."
+  }
+ ],
+ "head": {
+  "text": "write, one wait state",
+  "tick": 0
+ },
+ "config": {
+  "hscale": 2
+ }
+}

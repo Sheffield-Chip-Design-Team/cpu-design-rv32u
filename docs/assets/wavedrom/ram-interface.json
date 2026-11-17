@@ -1,0 +1,45 @@
+{
+ "signal": [
+  {
+   "name": "clk",
+   "wave": "p....."
+  },
+  {
+   "name": "en",
+   "wave": "01.0.."
+  },
+  {
+   "name": "we",
+   "wave": "x10x.."
+  },
+  {
+   "name": "addr",
+   "wave": "x==x..",
+   "data": [
+    "n",
+    "n"
+   ]
+  },
+  {
+   "name": "wdata",
+   "wave": "x=x...",
+   "data": [
+    "D"
+   ]
+  },
+  {
+   "name": "rdata",
+   "wave": "x..=..",
+   "data": [
+    "D"
+   ]
+  }
+ ],
+ "head": {
+  "text": "rv32u_ram: write, then read",
+  "tick": 0
+ },
+ "config": {
+  "hscale": 2
+ }
+}

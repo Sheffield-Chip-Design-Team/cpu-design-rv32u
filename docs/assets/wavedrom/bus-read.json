@@ -1,0 +1,45 @@
+{
+ "signal": [
+  {
+   "name": "clk",
+   "wave": "p...."
+  },
+  {
+   "name": "mem_valid",
+   "wave": "01.0."
+  },
+  {
+   "name": "mem_addr",
+   "wave": "x=.x.",
+   "data": [
+    "addr"
+   ]
+  },
+  {
+   "name": "mem_wstrb",
+   "wave": "x=.x.",
+   "data": [
+    "0000"
+   ]
+  },
+  {
+   "name": "mem_ready",
+   "wave": "0.10."
+  },
+  {
+   "name": "mem_rdata",
+   "wave": "x.=x.",
+   "data": [
+    "word"
+   ],
+   "node": "..a"
+  }
+ ],
+ "head": {
+  "text": "read, one wait state",
+  "tick": 0
+ },
+ "config": {
+  "hscale": 2
+ }
+}

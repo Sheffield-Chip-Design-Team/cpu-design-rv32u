@@ -1,0 +1,49 @@
+{
+ "signal": [
+  {
+   "name": "clk",
+   "wave": "p....."
+  },
+  {
+   "name": "mem_valid",
+   "wave": "01...0"
+  },
+  {
+   "name": "mem_addr",
+   "wave": "x=.==x",
+   "data": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  {
+   "name": "mem_wstrb",
+   "wave": "x=.==x",
+   "data": [
+    "0000",
+    "1111",
+    "0000"
+   ]
+  },
+  {
+   "name": "mem_ready",
+   "wave": "0.1..0"
+  },
+  {
+   "name": "mem_rdata",
+   "wave": "x.=x=x",
+   "data": [
+    "RAM[A]",
+    "IO[C]"
+   ]
+  }
+ ],
+ "head": {
+  "text": "back-to-back, zero-wait I/O",
+  "tick": 0
+ },
+ "config": {
+  "hscale": 2
+ }
+}

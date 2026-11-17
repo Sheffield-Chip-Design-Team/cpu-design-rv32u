@@ -1,0 +1,44 @@
+# The whole course as one PDF:
+#   quarto render docs --profile pdf --to typst      # writes docs/_book/*.pdf
+# Chapter order follows the sidebar in _quarto.yml.
+
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "CPU Design Mini-Project - RV32u"
+  subtitle: "Design, verify and tape out a 14-instruction multi-cycle RISC-V core on Tiny Tapeout IHP"
+  author: "James Ashie Kotey (SHaRC)"
+  output-file: "rv32i-micro-course"
+  chapters:
+    - index.md
+    - part: "Guide"
+      chapters:
+        - guide/getting-started.md
+        - guide/flow.md
+        - guide/resources.md
+    - part: "Specification"
+      chapters:
+        - spec/01-overview.md
+        - spec/02-isa.md
+        - spec/03-memory-bus.md
+        - spec/04-microarchitecture.md
+        - spec/05-control-fsm.md
+        - spec/06-retire-and-trap.md
+        - spec/07-memory-subsystem.md
+        - spec/08-software-flow.md
+        - spec/09-verification.md
+        - spec/10-tiny-tapeout.md
+        - spec/11-deliverables.md
+    - part: "Milestones"
+      chapters:
+        - milestones/m1-building-blocks.md
+        - milestones/m2-datapath-fsm.md
+        - milestones/m3-running-c.md
+        - milestones/m4-chip.md
+
+format:
+  typst:
+    toc: true
+    toc-depth: 1
