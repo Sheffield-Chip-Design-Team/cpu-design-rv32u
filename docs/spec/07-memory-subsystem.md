@@ -1,6 +1,6 @@
 # 7. Memory subsystem
 
-`rv32u_mem` (`src/mem/rv32u_mem.sv`, provided) is the slave on the core's [memory bus](03-memory-bus.md). It decodes each address to the RAM, the I/O region, or nothing.
+`rv32u_mem` (`src/hw/rtl/mem_ss/rv32u_mem.sv`, provided) is the slave on the core's [memory bus](03-memory-bus.md). It decodes each address to the RAM, the I/O region, or nothing.
 
 ## Memory map
 
@@ -60,7 +60,7 @@ scripts/select-memory.py macro_512x32            # or macro_2x512x16, or: flops 
 make -C sw clean && make test
 ```
 
-It rewrites every file that depends on the choice: `src/mem/mem_config.svh` (the RTL, the software build and the tests read it), `src/config.json` (the macros' placement and power), `info.yaml` (the source files and the tile count) and `src/rv32u.core` (the RAM fileset FuseSoC builds). For `flops` it also prints an area estimate.
+It rewrites every file that depends on the choice: `src/hw/rtl/mem_ss/mem_config.svh` (the RTL, the software build and the tests read it), `src/config.json` (the macros' placement and power), `info.yaml` (the source files and the tile count) and `src/rv32u.core` (the RAM fileset FuseSoC builds). For `flops` it also prints an area estimate.
 
 ## Check yourself
 

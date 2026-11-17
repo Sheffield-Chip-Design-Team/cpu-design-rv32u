@@ -30,15 +30,15 @@ Each chapter states **requirements**. They use "must", and the provided tests ch
 | Part | Files | Status |
 |---|---|---|
 | Encodings, ALU/immediate selectors, memory map | `src/rv32u_pkg.sv` | provided, fixed |
-| Control interface types (states, control signals) | `src/core/rv32u_ctrl.svh` | **yours** (D6, D7, D8) |
-| Register file, ALU, immediate generator | `src/core/rv32u_{regfile,alu,immgen}.sv` | **yours** (skeletons with ports) |
-| Control FSM, datapath | `src/core/rv32u_{control,datapath}.sv` | **yours** (skeletons with ports) |
-| Core wiring | `src/core/rv32u_core.sv` | provided |
-| Memory subsystem, the three RAM options | `src/mem/` | provided (you choose one: D1) |
+| Control interface types (states, control signals) | `src/hw/rtl/core/rv32u_ctrl.svh` | **yours** (D6, D7, D8) |
+| Register file, ALU, immediate generator | `src/hw/rtl/core/rv32u_{regfile,alu,immgen}.sv` | **yours** (skeletons with ports) |
+| Control FSM, datapath | `src/hw/rtl/core/rv32u_{control,datapath}.sv` | **yours** (skeletons with ports) |
+| Core wiring | `src/hw/rtl/core/rv32u_core.sv` | provided |
+| Memory subsystem, the three RAM options | `src/hw/rtl/mem_ss/` | provided (you choose one: D1) |
 | I/O region, program loader | `src/io/` | **yours** (stubs: D2, D3, D4, D5) |
 | System and Tiny Tapeout top level | `src/rv32u_soc.sv`, `src/tt_um_sharc_rv32u.sv` | provided (adapt the pin mapping: D5) |
-| Reference model, ISA and C tests | `verif/`, `sw/` | provided |
-| Unit tests of your modules | `verif/` (your files) | **yours** |
+| Reference model, ISA and C tests | `src/hw/dv/`, `src/sw/` | provided |
+| Unit tests of your modules | `src/hw/dv/` (your files) | **yours** |
 | Tiny Tapeout flow | `info.yaml`, `src/config.json`, `.github/workflows/` | provided |
 
 ## The design decisions

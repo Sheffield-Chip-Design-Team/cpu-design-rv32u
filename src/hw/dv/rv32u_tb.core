@@ -1,0 +1,76 @@
+CAPI=2:
+name: sharc:rv32u:tb:0.1.0
+description: >
+  The provided RV32u tests (spec 09): per-instruction and C-program tests, each run in
+  lockstep with the Python reference model. The toplevel is rv32u_soc, whose retire
+  port the tests watch; programs are loaded through its simulation-only test load port.
+  Run them with `make isa` / `make c` (add SIM=icarus for Icarus Verilog).
+
+scripts:
+  # The hook runs in the build directory (build/<core>/<target>), three levels down.
+  build_sw:
+    cmd: [make, -s, -C, ../../../src/sw]
+
+parameters:
+  SIM:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Simulation build (skips the SRAM black boxes; enables the models).
+  FUNCTIONAL:
+    datatype: bool
+    paramtype: vlogdefine
+    description: Selects the functional (timing-free) path of the IHP SRAM models.
+  waves:
+    datatype: bool
+    paramtype: plusarg
+    description: Dump rv32u.fst in the build directory (Icarus; `make ... SIM=icarus WAVES=1`).
+
+filesets:
+  rtl:
+    depend:
+      - sharc:rv32u:soc
+      - sharc:ip:ihp_sram
+
+targets:
+  default: &isa
+    description: Per-instruction tests on Verilator.
+    filesets: [rtl]
+    toplevel: rv32u_soc
+    parameters: [SIM=true, FUNCTIONAL=true, waves]
+    hooks:
+      pre_build: [build_sw]
+    flow: sim
+    flow_options: &verilator
+      tool: verilator
+      cocotb_module: dv.test_isa
+      verilator_options:
+        - --timing
+        - --public-flat-rw
+        - -Wno-fatal
+        - -Wno-TIMESCALEMOD
+        - -Wno-WIDTHEXPAND
+        - -Wno-WIDTHTRUNC
+
+  isa: *isa
+
+  c:
+    <<: *isa
+    description: C program tests on Verilator.
+    flow_options:
+      <<: *verilator
+      cocotb_module: dv.test_c
+
+  isa_icarus:
+    <<: *isa
+    description: Per-instruction tests on Icarus Verilog.
+    flow_options: &icarus
+      tool: icarus
+      cocotb_module: dv.test_isa
+      iverilog_options: [-g2012]
+
+  c_icarus:
+    <<: *isa
+    description: C program tests on Icarus Verilog.
+    flow_options:
+      <<: *icarus
+      cocotb_module: dv.test_c

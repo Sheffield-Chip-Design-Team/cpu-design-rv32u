@@ -11,7 +11,7 @@ Time: about 12 hours.
 
 ## Part 1: Design on paper first (D6, D7, D8)
 
-1. Design your states (D6): which states there are, what each one does, and the sequence each of the 14 instructions passes through ([chapter 5](../spec/05-control-fsm.md#where-to-start)). Then choose an encoding, and write `rv32u_pkg::state_e` in `src/core/rv32u_ctrl.svh`.
+1. Design your states (D6): which states there are, what each one does, and the sequence each of the 14 instructions passes through ([chapter 5](../spec/05-control-fsm.md#where-to-start)). Then choose an encoding, and write `rv32u_pkg::state_e` in `src/hw/rtl/core/rv32u_ctrl.svh`.
 2. List every control signal the datapath needs (D7): one per register write enable, plus multiplexer selects, the memory request and the retire pulses. Write them as fields of `ctrl_t`.
 3. Decide the ALU's operand sources (D8). Check that every ALU operation your states perform is possible: PC + 4, PC-relative targets, A op B, A + immediate.
 4. Fill in a table of every signal's value in every state, and put it in `DESIGN.md` (D7).
@@ -20,14 +20,14 @@ You should see: a table with one row per state, where every write enable is 0 un
 
 ## Part 2: The datapath
 
-1. In `src/core/rv32u_datapath.sv`, add the registers PC, OldPC, IR, MDR, A, B and ALUOut, each written only when its `ctrl` enable is high. Reset only the PC (to `rv32u_pkg::RESET_PC`).
+1. In `src/hw/rtl/core/rv32u_datapath.sv`, add the registers PC, OldPC, IR, MDR, A, B and ALUOut, each written only when its `ctrl` enable is high. Reset only the PC (to `rv32u_pkg::RESET_PC`).
 2. Connect the register file, the ALU and the immediate generator, with the operand multiplexers from D8.
 3. Drive the memory request from `ctrl`, following the [bus protocol](../spec/03-memory-bus.md).
 4. Fill in `status`, and drive the retire port ([chapter 6](../spec/06-retire-and-trap.md)).
 
 ## Part 3: The FSM
 
-1. In `src/core/rv32u_control.sv`, write the next-state logic and every control signal, state by state, from your D7 table. Start every `always_comb` with defaults (`ctrl = '0;`).
+1. In `src/hw/rtl/core/rv32u_control.sv`, write the next-state logic and every control signal, state by state, from your D7 table. Start every `always_comb` with defaults (`ctrl = '0;`).
 2. Decode the instruction (`status.insn`) for the 14 instructions, and trap on anything else.
 3. Run `make isa`. Start with `COCOTB_TEST_FILTER=lui make isa`: `LUI` needs the fewest steps.
 

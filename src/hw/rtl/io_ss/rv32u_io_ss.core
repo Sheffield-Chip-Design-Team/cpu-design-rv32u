@@ -1,0 +1,13 @@
+CAPI=2:
+name: sharc:rv32u:io_ss:0.1.0
+description: RV32u I/O subsystem and program loader (decisions D2-D5)
+
+filesets:
+  rtl:
+    files:
+      - rv32u_io.sv:     {file_type: systemVerilogSource}
+      - rv32u_loader.sv: {file_type: systemVerilogSource}
+
+targets:
+  default:
+    filesets: [rtl]

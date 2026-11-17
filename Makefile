@@ -2,7 +2,7 @@
 #
 #   make setup         Python environment (uv) + the IHP SRAM models (sparse submodule)
 #   make check-env     which tools you have, and how to get the missing ones
-#   make sw            build the ISA tests and C programs (sw/build/)
+#   make sw            build the ISA tests and C programs (src/sw/build/)
 #   make lint          Verilator lint of the design as Tiny Tapeout builds it
 #   make isa           per-instruction tests, lockstep with the reference model
 #   make c             C program tests, lockstep with the reference model
@@ -11,20 +11,21 @@
 #   make model-test    self-tests of the Python reference model
 #   make design-check  is every design decision in DESIGN.md filled in?
 #   make site          render the web page (needs Quarto)
-#   make memory OPT=macro_512x32|macro_2x512x16|flops [WORDS=n]    decision D1
+#   make mem-check     do your RAM, config.json and info.yaml agree? (decision D1)
 #
 # Options: SIM=icarus (default: verilator), WAVES=1 (Icarus: dump rv32u.fst),
-#          SOLUTION=1 (instructors: use solution/).
+#          SOLUTION=1 [RAM=512x32|2x512x16|flops] (instructors: use solution/).
 
 SIM      ?= verilator
 SOLUTION ?=
-CORES    := --cores-root src --cores-root ip --cores-root verif $(if $(SOLUTION),--cores-root solution)
-FUSESOC  := uv run fusesoc $(CORES) run --no-export
+RAM      ?= 512x32
+CORES    := --cores-root src/hw --cores-root ip $(if $(SOLUTION),--cores-root solution)
+FUSESOC  := uv run fusesoc $(CORES) run --no-export $(if $(SOLUTION),--flag ram_$(RAM))
 TB       := sharc:rv32u:tb
 SUFFIX   := $(if $(filter icarus,$(SIM)),_icarus,)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup check-env sw lint isa c test tt-test model-test design-check site memory clean
+.PHONY: help setup check-env sw lint isa c test tt-test model-test design-check mem-check site clean
 
 help:
 	@sed -n '2,18p' $(firstword $(MAKEFILE_LIST)) | sed 's/^# \{0,1\}//'
@@ -37,7 +38,7 @@ check-env:
 	scripts/check-env.sh
 
 sw:
-	$(MAKE) -C sw
+	$(MAKE) -C src/sw
 
 lint:
 	$(FUSESOC) --target=lint sharc:rv32u:soc
@@ -66,8 +67,8 @@ design-check:
 site:
 	quarto render docs
 
-memory:
-	scripts/select-memory.py $(OPT) $(if $(WORDS),--words $(WORDS))
+mem-check:
+	uv run python scripts/check_memory.py
 
 clean:
-	rm -rf -- build sw/build test/sim_build test/results.xml docs/_site docs/_book
+	rm -rf -- build src/sw/build test/sim_build test/results.xml docs/_site docs/_book

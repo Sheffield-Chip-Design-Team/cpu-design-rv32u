@@ -20,7 +20,7 @@ You should see: `scripts/select-memory.py --show` prints your option, and `make 
 ## Part 2: Run the C programs
 
 1. Run `make c`.
-2. Look at one program's journey: `sw/c/fib.c` becomes `sw/build/c/fib.s`, then `fib.legal.s` (the legalizer's rewrites), then the disassembly `fib.lst`.
+2. Look at one program's journey: `src/sw/c/fib.c` becomes `src/sw/build/c/fib.s`, then `fib.legal.s` (the legalizer's rewrites), then the disassembly `fib.lst`.
 
 You should see each program pass, with its CPI in the log, for example:
 
@@ -38,7 +38,7 @@ Predict before you look: which instruction does `fib` execute most often?
 
 ## Part 3: A program of your own (required)
 
-1. Write `sw/c/<name>.c` that computes something you can check by hand: a checksum, a small matrix sum, a recursive sequence. Store the results in a `volatile int result[]`, and add an `// expect:` line ([chapter 8](../spec/08-software-flow.md#adding-a-program)).
+1. Write `src/sw/c/<name>.c` that computes something you can check by hand: a checksum, a small matrix sum, a recursive sequence. Store the results in a `volatile int result[]`, and add an `// expect:` line ([chapter 8](../spec/08-software-flow.md#adding-a-program)).
 2. Run `make -C sw`. If `check_subset.py` rejects an instruction, rewrite that C ([Writing C for RV32u](../spec/08-software-flow.md#writing-c-for-rv32u)).
 3. Run `make c`.
 

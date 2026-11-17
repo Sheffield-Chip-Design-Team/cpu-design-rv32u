@@ -23,7 +23,7 @@ You should see: `make test` passes, and `make lint` is clean.
 
 The provided tests load programs through a backdoor. Now test the real path, as the chip will be used.
 
-1. Extend `test/test.py`: drive your loader through `ui_in`/`uio_in` to load a small program (for example a built `sw/build/isa/*.hex`). Then release the core and check your done signal (D4) on the outputs.
+1. Extend `test/test.py`: drive your loader through `ui_in`/`uio_in` to load a small program (for example a built `src/sw/build/isa/*.hex`). Then release the core and check your done signal (D4) on the outputs.
 2. Run `make tt-test`.
 
 You should see: your test loads, runs and checks a program using only the Tiny Tapeout pins.

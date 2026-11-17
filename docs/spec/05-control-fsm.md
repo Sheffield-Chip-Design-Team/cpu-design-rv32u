@@ -34,7 +34,7 @@ Wait states come on top. A memory access lasts until `mem_ready` ([chapter 3](03
 ## Design decisions
 
 ::: {.callout-important title="Design decision D6: states and their encoding"}
-**Decide:** your FSM's states, what each one does, the sequence each instruction passes through, and how the states are encoded in `rv32u_pkg::state_e` (`src/core/rv32u_ctrl.svh`).
+**Decide:** your FSM's states, what each one does, the sequence each instruction passes through, and how the states are encoded in `rv32u_pkg::state_e` (`src/hw/rtl/core/rv32u_ctrl.svh`).
 
 **Constraints:** R5.1-R5.4 above, the [bus protocol](03-memory-bus.md) (a state that makes a request waits in place until `mem_ready`), and the [trap rule](06-retire-and-trap.md) (the core stops for good). Reset must enter a defined state, and any unused encoding must lead somewhere safe.
 

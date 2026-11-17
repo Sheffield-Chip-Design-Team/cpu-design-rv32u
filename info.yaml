@@ -8,7 +8,7 @@ project:
   clock_hz:     50000000       # Clock frequency in Hz (or 0 if not applicable)
 
   # How many tiles your design occupies? A single tile is about 202x155 uM.
-  # Set by scripts/select-memory.py with the memory option (design decision D1).
+  # Depends on your RAM (design decision D1, spec chapter 7): 6x2 for the SRAM macros.
   tiles: "6x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2, 8x2, 3x4, 4x4, 5x4, 6x4 or 8x4
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
@@ -16,26 +16,24 @@ project:
 
   # List your project's source files here.
   # Source files must be in ./src and you must list each source file separately, one per line.
-  # Packages first. scripts/select-memory.py rewrites this list for the memory option (D1).
+  # Packages first. Keep this list in step with the FuseSoC cores (src/hw/**/*.core): add your
+  # SRAM wrappers (src/hw/pd/wrappers/) here if you use macros (D1). make mem-check compares them.
   source_files:
-    - "rv32u_pkg.sv"
-    - "core/rv32u_regfile.sv"
-    - "core/rv32u_alu.sv"
-    - "core/rv32u_immgen.sv"
-    - "core/rv32u_control.sv"
-    - "core/rv32u_datapath.sv"
-    - "core/rv32u_core.sv"
-    - "mem/rv32u_mem.sv"
-    - "mem/ram_macro_512x32.sv"
-    - "io/rv32u_io.sv"
-    - "io/rv32u_loader.sv"
-    - "rv32u_soc.sv"
-    - "tt_um_sharc_rv32u.sv"
-    - "sram_bb.sv"
+    - "hw/rtl/rv32u_pkg.sv"
+    - "hw/rtl/cpu_ss/rv32u_regfile.sv"
+    - "hw/rtl/cpu_ss/rv32u_alu.sv"
+    - "hw/rtl/cpu_ss/rv32u_immgen.sv"
+    - "hw/rtl/cpu_ss/rv32u_control.sv"
+    - "hw/rtl/cpu_ss/rv32u_datapath.sv"
+    - "hw/rtl/cpu_ss/rv32u_cpu_ss.sv"
+    - "hw/rtl/mem_ss/rv32u_ram.sv"
+    - "hw/rtl/mem_ss/rv32u_mem_ss.sv"
+    - "hw/rtl/io_ss/rv32u_io.sv"
+    - "hw/rtl/io_ss/rv32u_loader.sv"
+    - "hw/rtl/rv32u_soc.sv"
+    - "hw/pd/tt_um_sharc_rv32u.sv"
+    - "hw/pd/sram_bb.sv"
 
-# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
-# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
-# Design decision D5: fill these in to match your loader (D2) and I/O (D3, D4).
 pinout:
   # Inputs
   ui[0]: ""

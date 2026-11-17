@@ -104,9 +104,9 @@ website:
             href: viewer/index.html
           - text: "RTL (src/)"
             href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/src
-          - text: "Tests (verif/)"
+          - text: "Tests (src/hw/dv/)"
             href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/verif
-          - text: "Software (sw/)"
+          - text: "Software (src/sw/)"
             href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/sw
           - text: "Design record (DESIGN.md)"
             href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/blob/main/DESIGN.md

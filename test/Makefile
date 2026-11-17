@@ -25,7 +25,7 @@ endif
 
 # SystemVerilog, the IHP SRAM models' functional path, and no SRAM black boxes
 COMPILE_ARGS += -g2012 -DSIM -DFUNCTIONAL
-COMPILE_ARGS += -I$(SRC_DIR) -I$(SRC_DIR)/mem -I$(SRC_DIR)/core
+COMPILE_ARGS += -I$(SRC_DIR)/hw/rtl/mem_ss -I$(SRC_DIR)/hw/rtl/cpu_ss
 
 ifneq ($(GATES),yes)
 
@@ -56,7 +56,7 @@ VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
 
 endif
 
-# Behavioural models of the IHP SRAM macros (used by the macro memory options, D1)
+# Behavioural models of the IHP SRAM macros (used if your RAM has macros, D1)
 VERILOG_SOURCES += $(wildcard $(SRAM_MODELS)/RM_IHPSG13_1P_core_behavioral_bm_bist.v)
 VERILOG_SOURCES += $(wildcard $(SRAM_MODELS)/RM_IHPSG13_1P_512x32_c2_bm_bist.v)
 VERILOG_SOURCES += $(wildcard $(SRAM_MODELS)/RM_IHPSG13_1P_512x16_c2_bm_bist.v)

@@ -1,0 +1,21 @@
+CAPI=2:
+name: sharc:rv32u:wrappers:0.1.0
+description: >
+  Your wrappers of the IHP SRAM macros (design decision D1, spec 07). Add every wrapper
+  you write in this directory to the list below, and to source_files in info.yaml.
+  With a flip-flop RAM, leave the list empty.
+
+# TODO(D1): if you use SRAM macros, add a fileset with your wrappers and list it in the
+# default target, for example:
+#
+# filesets:
+#   rtl:
+#     files:
+#       - rv32u_sram512x32_wrapper.sv: {file_type: systemVerilogSource}
+#
+# targets:
+#   default:
+#     filesets: [rtl]
+
+targets:
+  default: {}

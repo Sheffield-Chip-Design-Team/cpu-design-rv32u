@@ -13,7 +13,7 @@ Time: about 6 hours.
 
 What does a two-read, one-write register file with a hardwired `x0` look like in SystemVerilog?
 
-1. Open `src/core/rv32u_regfile.sv`. Keep the ports; replace the `TODO` and the tied-off outputs.
+1. Open `src/hw/rtl/core/rv32u_regfile.sv`. Keep the ports; replace the `TODO` and the tied-off outputs.
 2. Store `x1`-`x31` and write on the rising edge when `we` is high. Read both ports combinationally.
 3. Make `x0` read as zero whatever is written to it.
 4. Run `make lint`.
@@ -22,8 +22,8 @@ You should see: `make lint` finishes with no `%Error` or `%Warning` lines for `r
 
 ## Part 2: The ALU and the immediate generator
 
-1. In `src/core/rv32u_alu.sv`, compute `y` for each `rv32u_pkg::alu_op_e`, and the flags `eq` and `lt` (signed) for every `op`.
-2. In `src/core/rv32u_immgen.sv`, produce the five immediates from [chapter 2](../spec/02-isa.md#immediates).
+1. In `src/hw/rtl/core/rv32u_alu.sv`, compute `y` for each `rv32u_pkg::alu_op_e`, and the flags `eq` and `lt` (signed) for every `op`.
+2. In `src/hw/rtl/core/rv32u_immgen.sv`, produce the five immediates from [chapter 2](../spec/02-isa.md#immediates).
 3. Refer to package items as `rv32u_pkg::ALU_ADD` and so on: no `import` (R4.1).
 
 Before you run anything, predict: what is `y` for `ALU_SLT` with `a = 32'h8000_0000`, `b = 1`?
@@ -36,8 +36,8 @@ Before you run anything, predict: what is `y` for `ALU_SLT` with `a = 32'h8000_0
 
 The whole-core tests will not tell you which block is wrong, so test each block alone ([chapter 9](../spec/09-verification.md#your-unit-tests)).
 
-1. Create `verif/unit/__init__.py` (empty) and `verif/unit/test_alu.py` with cocotb tests: every operation, overflow, and signed compares at the extremes.
-2. Add a `unit_alu` target to `verif/rv32u_tb.core` (the example is in chapter 9) and run it with `uv run fusesoc --cores-root src --cores-root ip --cores-root verif run --no-export --target=unit_alu sharc:rv32u:tb`.
+1. Create `src/hw/dv/unit/__init__.py` (empty) and `src/hw/dv/unit/test_alu.py` with cocotb tests: every operation, overflow, and signed compares at the extremes.
+2. Add a `unit_alu` target to `src/hw/dv/rv32u_tb.core` (the example is in chapter 9) and run it with `uv run fusesoc --cores-root src --cores-root ip --cores-root verif run --no-export --target=unit_alu sharc:rv32u:tb`.
 3. Do the same for the register file (including `x0`, and writing then reading every register) and the immediate generator (every format, positive and negative).
 
 You should see: every unit test passes, and breaking one line of your ALU makes at least one of them fail.

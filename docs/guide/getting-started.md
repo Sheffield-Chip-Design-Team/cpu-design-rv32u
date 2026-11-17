@@ -57,7 +57,7 @@ You should see `make check-env` report every required tool as `ok`.
 ## First run
 
 ```bash
-make sw       # build the test programs into sw/build/
+make sw       # build the test programs into src/sw/build/
 make lint     # Verilator lint of the starter design
 make isa      # the per-instruction tests
 ```
