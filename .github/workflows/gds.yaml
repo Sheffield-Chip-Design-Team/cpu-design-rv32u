@@ -1,0 +1,56 @@
+name: gds
+
+on:
+  # Tiny Tapeout CI runs only on the stable branches (contributing flow: README.md)
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+jobs:
+  gds:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Build GDS
+        uses: TinyTapeout/tt-gds-action@ttihp27a
+        with:
+          pdk: ihp-sg13cmos5l # or ihp-sg13g2
+
+  precheck:
+    needs: gds
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Run Tiny Tapeout Precheck
+        uses: TinyTapeout/tt-gds-action/precheck@ttihp27a
+
+  gl_test:
+    needs: gds
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: GL test
+        uses: TinyTapeout/tt-gds-action/gl_test@ttihp27a
+
+  # The layout viewer is part of the project site (site.yml): one repository has one
+  # GitHub Pages site, so instead of tt-gds-action/viewer (which would replace the site),
+  # this rebuilds the site with this run's layout under viewer/.
+  viewer:
+    needs: gds
+    permissions:
+      contents: read
+      actions: read
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    uses: ./.github/workflows/site.yml
+    with:
+      from_gds: true
