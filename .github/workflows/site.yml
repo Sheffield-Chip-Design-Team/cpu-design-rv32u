@@ -6,6 +6,8 @@
 # and a page that opens it in the Tiny Tapeout 3D viewer. gds.yaml calls this workflow
 # after every GDS build (with from_gds: true), so the viewer is always current; a push
 # that changes only docs/ fetches the layout from the last successful GDS run instead.
+# With no GDS run (or no 2D render), the site still builds: links to the render point at
+# viewer/, which says there is no layout yet.
 name: site
 
 on:
@@ -40,6 +42,8 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      has_render: ${{ steps.render.outputs.present }}
     steps:
       - uses: actions/checkout@v4
 
@@ -135,6 +139,21 @@ jobs:
           fi
           ls -la
 
+      # The docs link to viewer/gds_render.png. When there is no 2D render (no GDS run yet,
+      # or the run had no gds_render artifact), point those links at viewer/ instead, which
+      # always exists and says what is there. The link check stays strict for everything else.
+      - name: Point render links at viewer/ when there is no render
+        id: render
+        run: |
+          if [ -f docs/_site/viewer/gds_render.png ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No 2D render: linking viewer/ instead of viewer/gds_render.png"
+            grep -rlE 'href="[^"]*viewer/gds_render\.png' docs/_site --include='*.html' \
+              | xargs -r sed -i -E 's#(href="[^"]*viewer/)gds_render\.png#\1#g'
+          fi
+
       - name: Check links and anchors in the rendered site
         run: python3 scripts/check_site.py docs/_site
 
@@ -158,6 +177,8 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Links in the run summary
+        env:
+          HAS_RENDER: ${{ needs.build.outputs.has_render }}
         run: |
           URL="${{ steps.deployment.outputs.page_url }}"
           URL="${URL%/}"
@@ -165,5 +186,9 @@ jobs:
             echo "# Site"
             echo "[$URL]($URL/)"
             echo "# Layout"
-            echo "[3D viewer]($URL/viewer/) · [2D render]($URL/viewer/gds_render.png)"
+            if [ "$HAS_RENDER" = "true" ]; then
+              echo "[3D viewer]($URL/viewer/) · [2D render]($URL/viewer/gds_render.png)"
+            else
+              echo "[3D viewer]($URL/viewer/) (no 2D render in this build)"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
