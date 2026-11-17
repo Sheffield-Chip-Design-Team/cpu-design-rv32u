@@ -6,7 +6,7 @@ Design, verify and tape out a 14-instruction multi-cycle RISC-V core on Tiny Tap
 
 RV32u (RV32I-Micro) is a multi-cycle core for a 14-instruction subset of RV32I: enough to run C compiled with GCC. You write the core in SystemVerilog, verify it in lockstep against a Python reference model, choose its on-chip memory (an IHP SRAM macro or flip-flops), design how the chip is loaded and observed, and harden it for a Tiny Tapeout IHP SG13CMOS5L shuttle.
 
-**The specification and the milestones are on the project site**, published to this repo's GitHub Pages (`https://<owner>.github.io/<repo>/`; source in [docs/](docs/)). The same site carries the **layout viewer** for the latest GDS build, at `https://<owner>.github.io/<repo>/viewer/`.
+**The specification and the milestones are on the project site**, published to this repo's GitHub Pages (source in [docs/](docs/)). The same site carries the **layout viewer** for the latest GDS build.
 
 A SHaRC mini-project by James Ashie Kotey.
 
@@ -34,13 +34,13 @@ Add `SIM=icarus` to simulate with Icarus Verilog instead of Verilator (Verilator
 
 | Path | What |
 |---|---|
-| `src/core/` | **your core**: register file, ALU, immediate generator, control FSM, datapath |
-| `src/io/` | **your** program loader and I/O registers |
-| `src/mem/` | the memory subsystem and the three RAM options |
-| `src/rv32u_soc.sv`, `src/tt_um_sharc_rv32u.sv` | the system and the Tiny Tapeout top level |
+| `src/hw/rtl/core/` | **your core**: register file, ALU, immediate generator, control FSM, datapath |
+| `src/hw/rtl/core/` | **your** program loader and I/O registers |
+| `src/hw_rtl/mem_ss/` | the memory subsystem and the three RAM options |
+| `src/hw/rtl/rv32u_soc.sv`, `src/hw/pd/tt_um_sharc_rv32u.sv` | the system and the Tiny Tapeout top level |
 | `ip/` | IHP-Open-PDK (sparse submodule: the SRAM models only) |
-| `sw/` | startup code, linker script, ISA tests, C programs, the subset legalizer |
-| `verif/` | the reference model, the lockstep harness and the tests (FuseSoC + cocotb) |
+| `src/sw/` | startup code, linker script, ISA tests, C programs, the subset legalizer |
+| `src/hw/dv/` | the reference model, the lockstep harness and the tests (FuseSoC + cocotb) |
 | `test/` | the Tiny Tapeout cocotb test (RTL and gate level) |
 | `docs/` | the site: guide, specification, milestones; `docs/info.md` is the TT datasheet |
 | `scripts/` | toolchain install, environment check, memory selection, diagram rendering |
