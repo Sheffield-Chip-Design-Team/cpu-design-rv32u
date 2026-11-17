@@ -1,0 +1,80 @@
+# Lint, the per-instruction and C-program tests, and the DESIGN.md check.
+#
+# On the starter this is red by design: the core is a skeleton until the student writes
+# it. It goes green when the core retires every instruction like the reference model.
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  VERILATOR_VERSION: v5.040
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: IHP SRAM models (sparse submodule)
+        run: scripts/init-submodules.sh
+
+      - name: Tools (RISC-V GCC, Icarus, Verilator build dependencies)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-unknown-elf iverilog \
+            git make autoconf g++ flex bison help2man perl libfl2 libfl-dev zlib1g-dev ccache
+
+      - name: Cache Verilator
+        id: verilator-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/opt/verilator-${{ env.VERILATOR_VERSION }}
+          key: verilator-${{ env.VERILATOR_VERSION }}-ubuntu-24.04
+
+      - name: Build Verilator
+        if: steps.verilator-cache.outputs.cache-hit != 'true'
+        run: scripts/build-verilator.sh --version "$VERILATOR_VERSION"
+
+      - name: Add Verilator to PATH
+        run: echo "$HOME/opt/verilator-$VERILATOR_VERSION/bin" >> "$GITHUB_PATH"
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Python environment
+        run: uv sync
+
+      - name: Environment
+        run: scripts/check-env.sh || true
+
+      - name: Reference model self-tests
+        run: make model-test
+
+      - name: Timing diagrams up to date
+        run: uv run --group docs scripts/render-wavedrom.py --check
+
+      - name: Lint
+        run: make lint
+
+      - name: Per-instruction tests
+        run: make isa
+
+      - name: C-program tests
+        if: ${{ !cancelled() }}
+        run: make c
+
+      - name: DESIGN.md complete
+        if: ${{ !cancelled() }}
+        run: make design-check
+
+      - name: Test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            build/**/results.xml
+            build/**/*.log
+          if-no-files-found: ignore

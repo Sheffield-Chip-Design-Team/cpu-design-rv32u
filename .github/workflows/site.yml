@@ -1,0 +1,169 @@
+# Build the site with Quarto and deploy it to this repository's GitHub Pages
+# (https://<owner>.github.io/<repo>/). Set Settings -> Pages -> Source: GitHub Actions.
+#
+# A repository has one Pages site, so the Tiny Tapeout layout viewer lives inside it, at
+# viewer/: the latest successful GDS run's layout (tinytapeout.oas/.gds, gds_render.png)
+# and a page that opens it in the Tiny Tapeout 3D viewer. gds.yaml calls this workflow
+# after every GDS build (with from_gds: true), so the viewer is always current; a push
+# that changes only docs/ fetches the layout from the last successful GDS run instead.
+name: site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "scripts/check_site.py"
+      - ".github/workflows/site.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "scripts/check_site.py"
+      - ".github/workflows/site.yml"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      from_gds:
+        description: "called from gds.yaml: take the layout from this run's artifacts"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+env:
+  PDK: ihp-sg13cmos5l
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: pages
+        uses: actions/configure-pages@v5
+        continue-on-error: true   # Pages not enabled yet (e.g. on a pull request from a fork)
+
+      # The pages link to the repository they are built from, so a fork's site links to
+      # the fork.
+      - name: Point the site at this repository
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          grep -rlF 'https://github.com/uoftasic/rv32i-micro' docs --include='*.md' --include='*.yml' \
+            | xargs -r sed -i "s#https://github.com/uoftasic/rv32i-micro#${REPO_URL}#g"
+          if [ -n "$SITE_URL" ]; then
+            sed -i "s#^website:#website:\n  site-url: ${SITE_URL}/#" docs/_quarto.yml
+          fi
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.11.9
+
+      # The site, with a PDF of every page next to its HTML.
+      - name: Render the site
+        run: quarto render docs
+
+      # The whole course as one PDF, linked from the navbar as rv32i-micro-course.pdf.
+      - name: Render the course PDF
+        run: |
+          quarto render docs --profile pdf --to typst
+          cp docs/_book/rv32i-micro-course.pdf docs/_site/
+
+      # ---- the layout viewer (viewer/) ------------------------------------------------
+      - name: Layout from this GDS run
+        if: inputs.from_gds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "{tt_submission,gds_render}"
+          path: layout
+
+      - name: Layout from the last successful GDS run
+        if: ${{ !inputs.from_gds }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run=$(gh run list -R "$GITHUB_REPOSITORY" --workflow gds.yaml --branch main \
+                  --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
+          if [ -n "$run" ]; then
+            gh run download "$run" -R "$GITHUB_REPOSITORY" -n tt_submission -D layout/tt_submission || true
+            gh run download "$run" -R "$GITHUB_REPOSITORY" -n gds_render -D layout/gds_render || true
+          fi
+
+      - name: Build viewer/
+        run: |
+          mkdir -p docs/_site/viewer
+          cd docs/_site/viewer
+          if ls ../../../layout/tt_submission/*.oas >/dev/null 2>&1; then
+            cp ../../../layout/tt_submission/*.oas tinytapeout.oas
+            cp ../../../layout/tt_submission/*.gds tinytapeout.gds
+            cp ../../../layout/gds_render/*.png gds_render.png 2>/dev/null || true
+            cat > index.html <<EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head><meta charset="utf-8"><title>Layout viewer</title></head>
+          <body>
+          <p>Opening the layout in the <a id="go" href="#">Tiny Tapeout 3D viewer</a>...</p>
+          <p>Download the <a href="tinytapeout.gds">GDS</a> or <a href="tinytapeout.oas">OASIS</a> file.</p>
+          <p class="render"><a href="gds_render.png">2D render</a></p>
+          <script>
+            const model = new URL("tinytapeout.oas", location.href).href;
+            const url = "https://gds-viewer.tinytapeout.com/?pdk=${PDK}&model=" + encodeURIComponent(model);
+            document.getElementById("go").href = url;
+            location.replace(url);
+          </script>
+          </body>
+          </html>
+          EOF
+            [ -f gds_render.png ] || sed -i '/class="render"/d' index.html
+          else
+            cat > index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head><meta charset="utf-8"><title>Layout viewer</title></head>
+          <body>
+          <p>No layout yet. The Tiny Tapeout <code>gds</code> workflow publishes one here
+            after its first successful run on <code>main</code>.</p>
+          <p><a href="../index.html">Back to the site</a></p>
+          </body>
+          </html>
+          EOF
+          fi
+          ls -la
+
+      - name: Check links and anchors in the rendered site
+        run: python3 scripts/check_site.py docs/_site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    # one deployment at a time; a newer one waits rather than cancelling this one
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Links in the run summary
+        run: |
+          URL="${{ steps.deployment.outputs.page_url }}"
+          URL="${URL%/}"
+          {
+            echo "# Site"
+            echo "[$URL]($URL/)"
+            echo "# Layout"
+            echo "[3D viewer]($URL/viewer/) · [2D render]($URL/viewer/gds_render.png)"
+          } >> "$GITHUB_STEP_SUMMARY"
