@@ -102,12 +102,12 @@ website:
         contents:
           - text: "Layout viewer (latest GDS)"
             href: viewer/index.html
-          - text: "RTL (src/)"
-            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/src
+          - text: "RTL (src/hw/)"
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/src/hw
           - text: "Tests (src/hw/dv/)"
-            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/verif
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/src/hw/dv
           - text: "Software (src/sw/)"
-            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/sw
+            href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/tree/main/src/sw
           - text: "Design record (DESIGN.md)"
             href: https://github.com/Sheffield-Chip-Design-Team/rv32i-micro/blob/main/DESIGN.md
 

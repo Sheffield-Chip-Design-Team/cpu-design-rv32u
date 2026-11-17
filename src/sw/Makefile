@@ -11,7 +11,7 @@
 
 SW      := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 ROOT    := $(abspath $(SW)/../..)
-MEM_CONFIG := $(ROOT)/src/hw/rtl/mem_ss/mem_config.svh
+MEM_SS  := $(ROOT)/src/hw/rtl/mem_ss/rv32u_mem_ss.sv
 BUILD   := $(SW)/build
 PYTHON  ?= python3
 
@@ -32,8 +32,8 @@ ASFLAGS := $(ARCH) -mno-relax
 LDFLAGS := $(ARCH) -nostdlib -nostartfiles -Wl,--no-relax -Wl,--no-warn-rwx-segments \
            -Wl,-T,$(BUILD)/link.ld
 
-# RAM size (decision D1: RV32U_RAM_WORDS in src/hw/rtl/mem_ss/mem_config.svh)
-RAM_WORDS := $(shell sed -n 's/^`define RV32U_RAM_WORDS \([0-9]*\).*/\1/p' $(MEM_CONFIG))
+# RAM size (decision D1: the RAM_WORDS parameter of src/hw/rtl/mem_ss/rv32u_mem_ss.sv)
+RAM_WORDS := $(shell sed -n 's/.*parameter int RAM_WORDS *= *\([0-9]*\).*/\1/p' $(MEM_SS))
 RAM_BYTES := $(shell echo $$(( $(RAM_WORDS) * 4 )))
 
 ISA := $(patsubst $(SW)/isa/%.S,isa/%,$(wildcard $(SW)/isa/*.S))
@@ -45,7 +45,7 @@ all: $(ISA) $(C)
 
 $(ISA) $(C): %: $(BUILD)/%.hex
 
-$(BUILD)/link.ld: $(SW)/link.ld.in $(MEM_CONFIG)
+$(BUILD)/link.ld: $(SW)/link.ld.in $(MEM_SS)
 	@mkdir -p $(@D)
 	sed 's/@RAM_BYTES@/$(RAM_BYTES)/' $< > $@
 

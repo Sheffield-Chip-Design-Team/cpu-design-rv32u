@@ -8,7 +8,7 @@ C source --gcc -O0 -S--> assembly --legalize.py--> RV32u assembly --gcc--> ELF
    --objcopy--> binary --bin2hex.py--> src/sw/build/<kind>/<name>.hex  ($readmemh, one word per line)
 ```
 
-`make sw` (or `make -C sw`) builds every ISA test (`src/sw/isa/*.S`) and C program (`src/sw/c/*.c`). Each also gets a disassembly (`.lst`) and a symbol table (`.sym`) in `src/sw/build/`.
+`make sw` (or `make -C src/sw`) builds every ISA test (`src/sw/isa/*.S`) and C program (`src/sw/c/*.c`). Each also gets a disassembly (`.lst`) and a symbol table (`.sym`) in `src/sw/build/`.
 
 ## Toolchain
 

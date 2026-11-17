@@ -13,10 +13,9 @@
 // is held in reset.
 
 `default_nettype none
-`include "mem_config.svh"
 
 module rv32u_mem_ss #(
-    parameter int RAM_WORDS = `RV32U_RAM_WORDS
+  parameter int RAM_WORDS = 512
 ) (
     input  logic        clk,
     input  logic        rst_n,
@@ -96,5 +95,4 @@ module rv32u_mem_ss #(
   assign mem_rdata = is_io ? io_rdata : (pending_ram ? ram_rdata : 32'd0);
 
   wire _unused = &{1'b0, ld_addr[31:AW+2], ld_addr[1:0]};
-
 endmodule

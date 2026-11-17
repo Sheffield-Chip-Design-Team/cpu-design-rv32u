@@ -17,9 +17,9 @@ This file is for people improving the mini-project itself (the specification, th
 
 ## Changing the tests or the model
 
-- The reference model (`verif/model/rv32u_iss.py`) is the specification in code. Change it together with the chapter it implements, and add a self-test (`make model-test`).
-- A new ISA test is `sw/isa/<name>.S` with an `# expect:` header; a new C program is `sw/c/<name>.c` with `// expect:`. Work the expected values out by hand, not from the RTL.
-- Before committing, run the reference solution (instructors keep it in the gitignored `solution/`): `make test SOLUTION=1` for each RAM option, then `scripts/select-memory.py macro_512x32` to restore the default.
+- The reference model (`src/hw/dv/model/rv32u_iss.py`) is the specification in code. Change it together with the chapter it implements, and add a self-test (`make model-test`).
+- A new ISA test is `src/sw/isa/<name>.S` with an `# expect:` header; a new C program is `src/sw/c/<name>.c` with `// expect:`. Work the expected values out by hand, not from the RTL.
+- Before committing, run the reference solution (instructors keep it in the gitignored `solution/`): `make isa c SOLUTION=1 RAM=<option>` for `RAM=512x32`, `2x512x16` and `flops`.
 
 ## What never goes in the repo
 

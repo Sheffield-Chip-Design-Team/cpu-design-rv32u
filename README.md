@@ -24,7 +24,7 @@ On the starter, `make isa` fails: the core modules are skeletons for you to fill
 |---|---|
 | `make isa`, `make c` | the per-instruction and C-program tests, in lockstep with the reference model |
 | `make test` | lint, isa, c and the Tiny Tapeout smoke test |
-| `make memory OPT=...` | choose the RAM (design decision D1) |
+| `make mem-check` | do your RAM and the TT/FuseSoC files agree? (design decision D1) |
 | `make design-check` | is every design decision in [DESIGN.md](DESIGN.md) filled in? |
 | `make help` | everything else |
 
@@ -34,16 +34,17 @@ Add `SIM=icarus` to simulate with Icarus Verilog instead of Verilator (Verilator
 
 | Path | What |
 |---|---|
-| `src/hw/rtl/core/` | **your core**: register file, ALU, immediate generator, control FSM, datapath |
-| `src/hw/rtl/core/` | **your** program loader and I/O registers |
-| `src/hw_rtl/mem_ss/` | the memory subsystem and the three RAM options |
+| `src/hw/rtl/cpu_ss/` | **your CPU**: register file, ALU, immediate generator, control FSM, datapath |
+| `src/hw/rtl/io_ss/` | **your** program loader and I/O registers |
+| `src/hw/rtl/mem_ss/` | the memory subsystem: the provided bus adapter, and **your** RAM |
+| `src/hw/pd/` | the Tiny Tapeout top level, the macro black boxes, the PDN config, and **your** SRAM wrappers (`wrappers/`) |
 | `src/hw/rtl/rv32u_soc.sv`, `src/hw/pd/tt_um_sharc_rv32u.sv` | the system and the Tiny Tapeout top level |
 | `ip/` | IHP-Open-PDK (sparse submodule: the SRAM models only) |
 | `src/sw/` | startup code, linker script, ISA tests, C programs, the subset legalizer |
 | `src/hw/dv/` | the reference model, the lockstep harness and the tests (FuseSoC + cocotb) |
 | `test/` | the Tiny Tapeout cocotb test (RTL and gate level) |
 | `docs/` | the site: guide, specification, milestones; `docs/info.md` is the TT datasheet |
-| `scripts/` | toolchain install, environment check, memory selection, diagram rendering |
+| `scripts/` | toolchain install, environment check, memory and design checks, diagram rendering |
 | `DESIGN.md` | **your** design decisions |
 
 ## Tiny Tapeout

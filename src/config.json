@@ -31,9 +31,9 @@
   "//": "https://tinytapeout.com/faq/#how-can-i-map-an-additional-external-clock-to-one-of-the-gpios",
   "CLOCK_PORT": "clk",
 
-  "//": "Include files: hw/rtl/mem_ss/mem_config.svh (the RAM size, D1) and hw/rtl/cpu_ss/rv32u_ctrl.svh",
+  "//": "Include files: hw/rtl/cpu_ss/rv32u_ctrl.svh (your control types).",
   "//": "(your control interface, included inside package rv32u_pkg).",
-  "VERILOG_INCLUDE_DIRS": ["dir::hw/rtl/mem_ss", "dir::hw/rtl/cpu_ss"],
+  "VERILOG_INCLUDE_DIRS": ["dir::hw/rtl/cpu_ss"],
 
   "//": "======== Design decision D1: the RAM (spec chapter 7) ========",
   "//": "This starter configuration has no SRAM macros, which is right for a flip-flop RAM.",

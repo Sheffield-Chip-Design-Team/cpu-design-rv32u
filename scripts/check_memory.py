@@ -4,11 +4,11 @@
     make mem-check          (uv run python scripts/check_memory.py)
 
 You build the RAM yourself (src/hw/rtl/mem_ss/rv32u_ram.sv, and SRAM macro wrappers in
-src/hw/pd/wrappers/), and then describe it by hand in four places: mem_config.svh (its
-size), the FuseSoC cores, info.yaml (source files, tiles) and src/config.json (macro
+src/hw/pd/wrappers/), and then describe it by hand in four places: the RAM_WORDS
+parameter of rv32u_mem_ss.sv (its size), the FuseSoC cores, info.yaml (source files, tiles) and src/config.json (macro
 placement and power). This script checks them against each other and against the RTL:
 
-  - RV32U_RAM_WORDS is a power of two the RAM can hold;
+  - RAM_WORDS is a power of two the RAM can hold;
   - info.yaml lists exactly the sources FuseSoC builds (the lint target), and they exist;
   - every IHP SRAM macro instance in the RTL, traced from tt_um_sharc_rv32u, appears in
     config.json's MACROS with exactly that hierarchical path, and in
@@ -32,7 +32,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
-MEM_CONFIG = SRC / "hw/rtl/mem_ss/mem_config.svh"
+MEM_SS = SRC / "hw/rtl/mem_ss/rv32u_mem_ss.sv"
 TOP = "tt_um_sharc_rv32u"
 
 #: The IHP macros RV32u may use: words, bits per word, area in um^2
@@ -116,15 +116,15 @@ def macro_paths(mods: dict[str, str]) -> dict[str, list[str]]:
 # ---- the checks ------------------------------------------------------------------------
 
 def ram_words() -> int | None:
-    m = re.search(r"`define\s+RV32U_RAM_WORDS\s+(\d+)", MEM_CONFIG.read_text())
+    m = re.search(r"parameter\s+int\s+RAM_WORDS\s*=\s*(\d+)", MEM_SS.read_text())
     if not m:
-        fail(f"{MEM_CONFIG.relative_to(ROOT)}: no `define RV32U_RAM_WORDS")
+        fail(f"{MEM_SS.relative_to(ROOT)}: no `parameter int RAM_WORDS = <n>`")
         return None
     words = int(m.group(1))
     if words < 16 or words > 512 or words & (words - 1):
-        fail(f"RV32U_RAM_WORDS = {words}: use a power of two from 16 to 512")
+        fail(f"RAM_WORDS = {words}: use a power of two from 16 to 512")
     else:
-        ok(f"RV32U_RAM_WORDS = {words} ({words * 4} bytes)")
+        ok(f"RAM_WORDS = {words} ({words * 4} bytes)")
     return words
 
 
@@ -201,7 +201,7 @@ def main() -> int:
     if words:
         capacity = {m: MACROS[m][0] for m in found}
         if any(words > c for c in capacity.values()):
-            fail(f"RV32U_RAM_WORDS = {words}, but a macro holds only {min(capacity.values())} words")
+            fail(f"RAM_WORDS = {words}, but a macro holds only {min(capacity.values())} words")
         bits = sum(MACROS[m][1] * len(ps) for m, ps in found.items())
         if bits != 32:
             warn(f"the macros give {bits} bits per address; a 32-bit word needs exactly 32 "
@@ -248,7 +248,7 @@ def report() -> int:
     if errors:
         print(f"\n{len(errors)} problem(s): see spec chapter 7, 'Applying your choice'.")
         return 1
-    print("\nThe RAM, mem_config.svh, the cores, info.yaml and config.json agree.")
+    print("\nThe RAM, its size, the cores, info.yaml and config.json agree.")
     return 0
 
 

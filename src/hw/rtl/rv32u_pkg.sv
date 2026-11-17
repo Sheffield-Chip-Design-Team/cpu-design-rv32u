@@ -4,7 +4,7 @@
 //
 // Provided: do not change the encodings or the memory map. The control interface
 // (FSM states, control signals: decisions D6, D7, D8) is yours: it lives in
-// src/core/rv32u_ctrl.svh, which is `include'd at the end of this package.
+// src/hw/rtl/cpu_ss/rv32u_ctrl.svh, which is `include'd at the end of this package.
 //
 // Refer to anything here as rv32u_pkg::<name>. Do not `import rv32u_pkg::*`: Yosys,
 // which Tiny Tapeout synthesises with, does not support package imports.
@@ -57,7 +57,7 @@ package rv32u_pkg;
 
   // ---- memory map (fixed; spec 07-memory-subsystem.md) --------------------------------
   // RAM occupies [0, RAM_BYTES); the size comes from the memory option you choose
-  // (decision D1) through `RV32U_RAM_WORDS in src/mem/mem_config.svh.
+  // (decision D1) through the RAM_WORDS parameter of src/hw/rtl/mem_ss/rv32u_mem_ss.sv.
   localparam logic [31:0] RAM_BASE = 32'h0000_0000;
   localparam logic [31:0] IO_BASE  = 32'h8000_0000;  // addr[31] = 1: I/O region (D3)
 

@@ -13,7 +13,7 @@ RV32u lacks are few, and each has a short equivalent in the subset:
   andi rd, rd, 255 (or 1) straight after seqz/snez rd: dropped (the value is already 0/1;
                    GCC emits it for `return a == b;`)
 
-Everything else passes through unchanged; sw/check_subset.py then rejects anything still
+Everything else passes through unchanged; src/sw/check_subset.py then rejects anything still
 outside the subset (e.g. unsigned compares, shifts by a register, mul) with the source
 line, so you can rewrite that C.
 """

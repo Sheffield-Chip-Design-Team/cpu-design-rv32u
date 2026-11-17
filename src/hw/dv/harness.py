@@ -37,7 +37,7 @@ async def load(dut, words: list[int]) -> None:
     n = ram_words()
     if len(words) > n:
         raise ValueError(f"the image is {len(words)} words; the RAM has {n} "
-                         "(RV32U_RAM_WORDS, decision D1)")
+                         "(RAM_WORDS in rv32u_mem_ss.sv, decision D1)")
     image = list(words) + [0] * (n - len(words))
     dut.tb_load.value = 1
     for i, w in enumerate(image):

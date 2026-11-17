@@ -9,7 +9,6 @@ filesets:
     depend:
       - sharc:rv32u:ram
     files:
-      - mem_config.svh:  {file_type: systemVerilogSource, is_include_file: true}
       - rv32u_mem_ss.sv: {file_type: systemVerilogSource}
 
 targets:

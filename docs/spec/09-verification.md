@@ -15,14 +15,14 @@ Every provided test runs a program on your RTL and on a **reference model** at t
 
 The tests check **retirement equivalence** only: the same instructions, retired in the same order, with the same values on the retire port. They do not check how many cycles an instruction takes, or which states your FSM passes through ([chapter 5](05-control-fsm.md)). The one timing limit is R5.4: more than 200 cycles without a retired instruction counts as a hang.
 
-The tests run through FuseSoC (`src/hw/dv/rv32u_tb.core`) and cocotb, with `rv32u_soc` as the top level. Before each test, they load the program into the RAM through the simulator (a backdoor), so they work before you design a loader (D2).
+The tests run through FuseSoC (`src/hw/dv/rv32u_tb.core`) and cocotb, with `rv32u_soc` as the top level. Before each test, they load the program through the memory subsystem's loader port, using a simulation-only port in `rv32u_soc` that holds the CPU in reset. So they work before you design a loader (D2), and whatever RAM you build (D1).
 
 ## Reading a failure
 
 A lockstep failure names the instruction, the field that differs, and what came before it. For example, from an ALU that compares unsigned where `SLT` is signed:
 
 ```
-verif.harness.LockstepError: slt: retired instruction #3 differs from the reference model in rd_wdata (cycle 14)
+dv.harness.LockstepError: slt: retired instruction #3 differs from the reference model in rd_wdata (cycle 14)
   RTL:   pc=0x00000008  slt t2, t0, t1                    x7=0x00000000  next=0x0000000c
   model: pc=0x00000008  slt t2, t0, t1                    x7=0x00000001  next=0x0000000c
   previous instructions:
@@ -53,7 +53,7 @@ The provided tests check the whole core. They will not tell you which of your bl
       flow: sim
       flow_options:
         tool: verilator
-        cocotb_module: verif.unit.test_alu
+        cocotb_module: dv.unit.test_alu
   ```
 
   with your test in `src/hw/dv/unit/test_alu.py` (and an empty `src/hw/dv/unit/__init__.py`).

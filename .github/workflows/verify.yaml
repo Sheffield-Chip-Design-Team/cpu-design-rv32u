@@ -65,6 +65,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: make c
 
+      - name: RAM and its description agree (D1)
+        if: ${{ !cancelled() }}
+        run: make mem-check
+
       - name: DESIGN.md complete
         if: ${{ !cancelled() }}
         run: make design-check

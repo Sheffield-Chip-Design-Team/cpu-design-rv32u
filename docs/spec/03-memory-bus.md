@@ -1,6 +1,6 @@
 # 3. Memory bus
 
-The core has one **unified (von Neumann) memory bus** for instructions and data, with a `valid`/`ready` handshake. The core is the master, and `rv32u_mem` is the slave ([memory subsystem](07-memory-subsystem.md)). The same protocol connects `rv32u_mem` to the I/O region (`rv32u_io`).
+The core has one **unified (von Neumann) memory bus** for instructions and data, with a `valid`/`ready` handshake. The core is the master, and `rv32u_mem_ss` is the slave ([memory subsystem](07-memory-subsystem.md)). The same protocol connects `rv32u_mem_ss` to the I/O region (`rv32u_io`).
 
 ## Signals
 
@@ -21,14 +21,14 @@ The core has one **unified (von Neumann) memory bus** for instructions and data,
 - R3.2, **wait:** while `mem_ready` is low, the core holds `mem_valid`, `mem_addr`, `mem_wdata` and `mem_wstrb` stable and does not move on: the FSM waits in the state that made the request.
 - R3.3, **complete:** the transaction completes on a rising edge where `mem_valid && mem_ready`. A read latches `mem_rdata` (into `IR` for a fetch, `MDR` for `LW`) on that edge. The core then moves to its next state, and lowers `mem_valid` unless it starts another transaction straight away.
 - R3.4: the core issues at most one transaction at a time, and never changes a request before it completes.
-- R3.5: the core must not assume a fixed latency. It must work with any number of wait states, including none: `mem_ready` may be high in the request's own cycle (`rv32u_mem` adds one wait state for the RAM; an I/O slave may add none or several).
+- R3.5: the core must not assume a fixed latency. It must work with any number of wait states, including none: `mem_ready` may be high in the request's own cycle (`rv32u_mem_ss` adds one wait state for the RAM; an I/O slave may add none or several).
 - R3.6: the core may start a new request in the cycle after a completion (back-to-back), or leave `mem_valid` low between requests.
 
 ## Timing
 
 Each diagram counts cycles from the left; cycle *n* is the period between ticks *n* and *n* + 1, and a transaction completes on the rising edge at the end of the cycle in which `mem_valid` and `mem_ready` are both high. Hatched values are don't-care.
 
-A **read** with the provided RAM (one wait state). `rv32u_mem` accepts the request in cycle 1 and starts the RAM read on the edge at its end. The word returns with `mem_ready` in cycle 2, and the core latches it on the edge at the end of cycle 2:
+A **read** with the provided RAM (one wait state). `rv32u_mem_ss` accepts the request in cycle 1 and starts the RAM read on the edge at its end. The word returns with `mem_ready` in cycle 2, and the core latches it on the edge at the end of cycle 2:
 
 ![Read, one wait state](../assets/img/wavedrom/bus-read.svg){.wavedrom fig-alt="WaveDrom timing diagram: mem_valid high in cycles 1 and 2 with mem_addr and mem_wstrb 0000 stable, mem_ready high in cycle 2 with mem_rdata valid in cycle 2."}
 

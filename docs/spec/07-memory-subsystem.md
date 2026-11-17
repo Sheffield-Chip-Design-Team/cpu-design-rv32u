@@ -1,6 +1,23 @@
 # 7. Memory subsystem
 
-`rv32u_mem` (`src/hw/rtl/mem_ss/rv32u_mem.sv`, provided) is the slave on the core's [memory bus](03-memory-bus.md). It decodes each address to the RAM, the I/O region, or nothing.
+The memory subsystem, `mem_ss`, is the slave on the core's [memory bus](03-memory-bus.md). It has two parts:
+
+| Part | File | Status |
+|---|---|---|
+| The bus adapter: address decode, wait state, the I/O region, the loader port | `src/hw/rtl/mem_ss/rv32u_mem_ss.sv` | provided |
+| The RAM, `rv32u_ram` | `src/hw/rtl/mem_ss/rv32u_ram.sv` | **yours** (D1) |
+| Wrappers of the IHP SRAM macros, if your RAM uses them | `src/hw/pd/wrappers/*.sv` | **yours** (D1) |
+| The RAM size: the `RAM_WORDS` parameter | `src/hw/rtl/mem_ss/rv32u_mem_ss.sv` | **yours** (D1) |
+
+The structure follows the grouper SoC's `ram_ss`: the adapter instantiates one RAM module, and the RAM is built either from macro wrappers kept with the physical-design files (`pd/`) or from a flip-flop array in the RTL.
+
+```
+rv32u_soc
+ └─ u_mem   rv32u_mem_ss      (provided)
+     └─ u_ram   rv32u_ram     (yours: flip-flops here, or ...)
+         └─ <your wrapper instance(s)>   src/hw/pd/wrappers/ (yours)
+             └─ <macro instance>         RM_IHPSG13_1P_512x32 or _512x16 (IHP)
+```
 
 ## Memory map
 
@@ -10,62 +27,139 @@
 | `RAM_BYTES` to `0x7FFF_FFFF` | unmapped | completes with one wait state; reads return 0, writes are ignored |
 | `0x8000_0000` to `0xFFFF_FFFF` (`addr[31] = 1`) | I/O | forwarded to `rv32u_io` on the same protocol (decision [D3](10-tiny-tapeout.md)) |
 
-`RAM_BYTES` is 2048 (2 KiB) for both macro options, and 4 x `--words` for flip-flops (decision D1 below). Code, data and the stack all live in the RAM: the program is at address 0, and the stack grows down from `RAM_BYTES`.
+`RAM_BYTES` is 4 x `RAM_WORDS`, a parameter of `rv32u_mem_ss.sv`. Code, data and the stack all live in the RAM: the program is at address 0, and the stack grows down from `RAM_BYTES`.
 
 ## The RAM interface
 
-Every RAM option implements the same module, `rv32u_ram`:
+`rv32u_mem_ss` instantiates your RAM as `u_ram`, with this interface (fixed: do not change the ports):
 
-| Port | Meaning |
-|---|---|
-| `en`, `we`, `addr`, `wdata` | on a rising edge with `en`: write `wdata` to word `addr` if `we`, else read it |
-| `rdata` | the word read, valid in the cycle **after** the read (synchronous read) |
+```systemverilog
+module rv32u_ram #(parameter int WORDS = 512) (
+    input  logic                     clk,
+    input  logic                     en,     // access this cycle
+    input  logic                     we,     // 1: write, 0: read
+    input  logic [$clog2(WORDS)-1:0] addr,   // word address
+    input  logic [31:0]              wdata,
+    output logic [31:0]              rdata   // the word read, from the next cycle
+);
+```
+
+- R7.1: on a rising edge with `en` high, write `wdata` to word `addr` if `we`, otherwise read word `addr`.
+- R7.2: **synchronous read:** `rdata` is the word read from the cycle after the read, and holds it until the next read. Both the macros and a flip-flop array must behave this way, so the core and the tests are the same whatever you choose.
+- R7.3: whole words only (`LW`/`SW` are the only accesses), so no byte enables are needed.
+- R7.4: no reset. The RAM's contents at power-up are undefined; the loader (D2) or the tests write every word before the core runs.
 
 ![rv32u_ram: a write, then a read of the same word](../assets/img/wavedrom/ram-interface.svg){.wavedrom fig-alt="WaveDrom timing diagram: en high in cycles 1 and 2; we high in cycle 1 with addr n and wdata D (the write), we low in cycle 2 with addr n (the read); rdata shows D from cycle 3."}
 
-`rv32u_mem` turns this into the [bus protocol](03-memory-bus.md#timing). It accepts a request in the cycle `mem_valid` is high, starts the RAM access on that edge, and raises `mem_ready` (with `mem_rdata`) in the next cycle. That one wait state is why every fetch and every `LW`/`SW` takes at least two cycles.
+`rv32u_mem_ss` turns this into the [bus protocol](03-memory-bus.md#timing). It accepts a request in the cycle `mem_valid` is high, starts the RAM access on that edge, and raises `mem_ready` (with `mem_rdata`) in the next cycle. That one wait state is why every fetch and every `LW`/`SW` takes at least two cycles.
 
-The **loader port** (`ld_we`, `ld_addr`, `ld_wdata`) writes one RAM word per cycle and has priority over the core. Use it only while the core is held in reset (decision [D2](10-tiny-tapeout.md)). In simulation the tests load programs through the simulator instead (a "backdoor"), so the provided tests run before you design a loader.
+The **loader port** (`ld_we`, `ld_addr`, `ld_wdata`) writes one RAM word per cycle and has priority over the core. Your loader (D2) uses it while it holds the core in reset. The provided tests use it too, through a simulation-only port in `rv32u_soc`, so they load programs the same way whatever RAM you build.
 
 ## The RAM options
 
-| Option | `rv32u_ram` | Size | Area | Tiles (with the core) |
+| Option | Built from | Size | Area | Tiles (with the core) |
 |---|---|---|---|---|
-| `macro_512x32` | 1 x IHP `RM_IHPSG13_1P_512x32_c2_bm_bist` | 2 KiB | macro 416.64 x 191.34 um (79,720 um^2) | 6x2 |
-| `macro_2x512x16` | 2 x IHP `RM_IHPSG13_1P_512x16_c2_bm_bist`, low and high half-words | 2 KiB | 2 x 236.80 x 191.34 um (90,619 um^2) | 6x2 |
-| `flops` | a flip-flop array, `--words` 16-512 | 64-2048 B | ~7.25 GE per bit + the read multiplexer: 64 words ~20k GE, 256 words ~80k GE | 64 words: 8x2; 256 words: more than 8x4 |
+| one 512x32 macro | 1 x IHP `RM_IHPSG13_1P_512x32_c2_bm_bist` | 2 KiB | 416.64 x 191.34 um (79,720 um^2) | 6x2 |
+| two 512x16 macros | 2 x IHP `RM_IHPSG13_1P_512x16_c2_bm_bist`: the low and high half-word of every word | 2 KiB | 2 x 236.80 x 191.34 um (90,619 um^2) | 6x2 |
+| flip-flops | an array in `rv32u_ram.sv`, 16-512 words | 64-2048 B | ~7.25 GE per bit + the read multiplexer: 64 words ~20k GE, 256 words ~80k GE | 64 words: 8x2; 256 words: more than 8x4 |
 
-For scale: the reference core is about 126,000 um^2 of standard cells (about 17k gate equivalents), measured with Yosys on the IHP sg13g2 cells. About 80% of that is the 31 x 32 flip-flop register file. A Tiny Tapeout IHP tile is 202 x 155 um (6x2 tiles: about 405,000 um^2), and placement and routing need room to spare (the flow targets 60% density).
+For scale: the reference core is about 126,000 um^2 of standard cells (about 17k gate equivalents), measured with Yosys on the IHP sg13g2 cells. About 80% of that is the 31 x 32 flip-flop register file. A Tiny Tapeout IHP tile is 202 x 155 um (6x2 tiles: about 375,000 um^2), and placement and routing need room to spare (the flow targets 60% density).
 
 ::: {.callout-important title="Design decision D1: memory implementation"}
-**Decide:** which RAM the chip has: one 512x32 macro, two 512x16 macros, or a flip-flop array of a size you choose.
+**Decide:** which RAM the chip has: one 512x32 macro, two 512x16 macros, or a flip-flop array of a size you choose. Then build it.
 
-**Constraints:** the RAM must hold your largest program: its code, its data and its stack. The provided C programs are up to 205 words of code and data, plus their stack (e.g. `fib` recurses about 80 words deep). The chip must fit the tiles in `info.yaml` at a density the flow can place and route. Simulation and synthesis must use the same option.
+**Constraints:** R7.1-R7.4. The RAM must hold your largest program: its code, its data and its stack. The provided C programs are up to 205 words of code and data, plus their stack (e.g. `fib` recurses about 80 words deep). The chip must fit the tiles in `info.yaml` at a density the flow can place and route. `make mem-check` must pass.
 
 **Options:**
 
-- `macro_512x32`: one macro, 32-bit words natively, the simplest power grid (the same recipe as Tiny Tapeout's SRAM example). The largest single block to floorplan.
-- `macro_2x512x16`: two narrower macros side by side. They can be placed more flexibly, but there are two power connections and slightly more area.
-- `flops`: no macro and no special power grid, so the least hardening risk. But it is very expensive per bit: only a small RAM is affordable, which limits program size.
+- *One 512x32 macro:* 32-bit words natively, one wrapper, the simplest power grid (the same recipe as Tiny Tapeout's SRAM example). The largest single block to floorplan.
+- *Two 512x16 macros:* one wrapper, instantiated twice side by side. They can be placed more flexibly, but there are two power connections and slightly more area.
+- *Flip-flops:* no macro, no wrapper and no special power grid, so the least hardening risk. But it is very expensive per bit: only a small RAM is affordable, which limits program size.
 
 The IHP SRAM power scheme is new in Tiny Tapeout's flow and not yet proven in silicon (see [chapter 10](10-tiny-tapeout.md)).
 
-**Record in DESIGN.md (D1):** the option, why, its area and tiles, and the largest program it runs.
+**Record in DESIGN.md (D1):** the option, why, the wrapper(s) and the macro instance paths, the area and tiles, and the largest program it runs.
 :::
 
-Apply your choice with:
+## Writing a macro wrapper
 
-```bash
-scripts/select-memory.py macro_512x32            # or macro_2x512x16, or: flops --words 128
-make -C sw clean && make test
-```
+If you use macros, write one wrapper module per macro type, in `src/hw/pd/wrappers/` (for example `rv32u_sram512x32_wrapper.sv`). The wrapper gives the macro the simple active-high interface of `rv32u_ram`, and hides its test pins. Then `rv32u_ram` instantiates your wrapper once (512x32) or twice (512x16, one per half-word).
 
-It rewrites every file that depends on the choice: `src/hw/rtl/mem_ss/mem_config.svh` (the RTL, the software build and the tests read it), `src/config.json` (the macros' placement and power), `info.yaml` (the source files and the tile count) and `src/rv32u.core` (the RAM fileset FuseSoC builds). For `flops` it also prints an area estimate.
+The macro's pins, from the [IHP SRAM documentation](https://ihp-open-pdk-docs.readthedocs.io/en/latest/contents/reference_libraries/sram.html) and the model in `ip/IHP-Open-PDK/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/` (`W` is 32 or 16):
+
+| Pin | Width | Use |
+|---|---|---|
+| `A_CLK` | 1 | the clock |
+| `A_MEN` | 1 | macro enable (active high): the access happens on this edge |
+| `A_WEN`, `A_REN` | 1, 1 | write enable, read enable (active high); never both |
+| `A_ADDR` | 9 | word address |
+| `A_DIN`, `A_DOUT` | W, W | write data; read data (valid after the edge, held until the next read) |
+| `A_BM` | W | bit mask for writes: all ones for whole-word writes |
+| `A_DLY` | 1 | internal delay setting: **must be tied to 1** |
+| `A_BIST_CLK`, `A_BIST_EN`, `A_BIST_MEN`, `A_BIST_WEN`, `A_BIST_REN`, `A_BIST_ADDR`, `A_BIST_DIN`, `A_BIST_BM` | | the built-in self-test port: **tie every one to 0** |
+
+- R7.5: put `(* keep *)` on the macro instance. Until your loader and I/O make the chip's outputs depend on the RAM, synthesis would otherwise remove it, and the hardening flow would then fail to find the macro it is told to place.
+- R7.6: name every instance on the way down (`u_ram`, your wrapper instance, the macro instance): `src/config.json` refers to the macro by that path.
+- In simulation the macro is the IHP behavioural model (from `ip/`); for synthesis and lint, `src/hw/pd/sram_bb.sv` declares it as a black box. You use the same module name in both cases.
+
+## Applying your choice
+
+Describe the RAM you built in every file the flow reads. `make mem-check` (`scripts/check_memory.py`) checks them against each other and against your RTL.
+
+1. **The size:** set the `RAM_WORDS` parameter in `src/hw/rtl/mem_ss/rv32u_mem_ss.sv` (512 for either macro option). Then `make -C src/sw clean`: the stack starts at the top of the RAM.
+2. **FuseSoC:** list each wrapper in `src/hw/pd/wrappers/rv32u_wrappers.core` (the file shows how). A flip-flop RAM needs nothing here.
+3. **`info.yaml`:** add each wrapper to `source_files`, before `hw/rtl/mem_ss/rv32u_ram.sv`. Keep `hw/pd/sram_bb.sv`. Set `tiles` (6x2 for the macros; for flip-flops, whatever `make mem-check` estimates).
+4. **`src/config.json`**, for macros only. Add the SRAM entries from Tiny Tapeout's [SRAM example](https://github.com/TinyTapeout/ttihp-cmos5l-sram-example), with your instance paths. For one 512x32 macro whose wrapper instance is `u_sram`:
+
+   ```json
+   "meta": {
+     "flow": "Classic",
+     "substituting_steps": { "+OpenROAD.GeneratePDN": "Project.ExtendPowerStripes" }
+   },
+   "MACROS": {
+     "RM_IHPSG13_1P_512x32_c2_bm_bist": {
+       "instances": {
+         "u_soc.u_mem.u_ram.u_sram.u_macro": { "location": [3.36, 3.78], "orientation": "FS" }
+       },
+       "gds": ["pdk_dir::libs.ref/sg13cmos5l_sram/gds/RM_IHPSG13_1P_512x32_c2_bm_bist.gds"],
+       "lef": ["pdk_dir::libs.ref/sg13cmos5l_sram/lef/RM_IHPSG13_1P_512x32_c2_bm_bist.lef"],
+       "lib": {
+         "*_typ_*":  ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_512x32_c2_bm_bist_typ_1p20V_25C.lib"],
+         "*_fast_*": ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_512x32_c2_bm_bist_fast_1p32V_m55C.lib"],
+         "*_slow_*": ["pdk_dir::libs.ref/sg13cmos5l_sram/lib/RM_IHPSG13_1P_512x32_c2_bm_bist_slow_1p08V_125C.lib"]
+       }
+     }
+   },
+   "PDN_MACRO_CONNECTIONS": [
+     "u_soc.u_mem.u_ram.u_sram.u_macro VPWR VGND VDD! VSS!",
+     "u_soc.u_mem.u_ram.u_sram.u_macro VPWR VGND VDDARRAY! VSS!"
+   ],
+   "PDN_CFG": "dir::hw/pd/pdn_cfg.tcl",
+   "EXTEND_STRIPES_SRAM_ARRAY_EVERY_OTHER": true,
+   "ERROR_ON_PDN_VIOLATIONS": 0,
+   "RUN_MAGIC_DRC": 0,
+   "ERROR_ON_ILLEGAL_OVERLAPS": 0,
+   "FP_PDN_VPITCH": 44.96,
+   "FP_PDN_VWIDTH": 2.1,
+   "FP_PDN_VSPACING": 3.52,
+   "FP_PDN_VOFFSET": 6.15
+   ```
+
+   (Replace the existing `FP_PDN_VPITCH` and `FP_PDN_VWIDTH`; JSON keys must be unique.) The stripe settings put the PDN's power stripes over the macro's Metal4 power columns, which are 11.24 um apart. For two 512x16 macros, list both instances under `RM_IHPSG13_1P_512x16_c2_bm_bist`, the second at `x = 3.36 + k * 44.96` clear of the first (236.80 um wide; for example 273.12), and give each its two `PDN_MACRO_CONNECTIONS` lines.
+5. Run `make mem-check`, `make lint` and `make test`.
+
+You should see `make mem-check` end with "The RAM, its size, the cores, info.yaml and config.json agree."
 
 ## Check yourself
 
 1. Why does the RAM interface have a one-cycle read latency even for the flip-flop option?
 
    <details><summary>Answer</summary>
-   So every option has the same timing: the SRAM macros read synchronously (the address is registered on the clock edge), and the flip-flop array does too. Your core, its cycle counts and the tests are then the same whatever you choose in D1.
+   So every option has the same timing: the SRAM macros read synchronously (the address is registered on the clock edge), and a flip-flop array written this way does too. Your core, its cycle counts and the tests are then the same whatever you choose in D1. A synchronous read also keeps the array's large read multiplexer off the core's critical path.
+   </details>
+
+2. Your 512x32 wrapper's macro instance is `u_macro`, inside a wrapper instance `u_sram`. What path goes in `config.json`, and what happens if you rename `u_sram` to `u_sram0` and forget to update it?
+
+   <details><summary>Answer</summary>
+   `u_soc.u_mem.u_ram.u_sram.u_macro`: the instance names from the Tiny Tapeout top level down. After the rename, LibreLane finds no instance with the configured name, so the hardening fails (or the macro is unplaced and unpowered). `make mem-check` reports it first, as a path in the RTL that is missing from `MACROS`.
    </details>

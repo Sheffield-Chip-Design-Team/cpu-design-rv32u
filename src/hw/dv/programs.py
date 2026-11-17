@@ -16,16 +16,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 SW = ROOT / "src" / "sw"
-MEM_CONFIG = ROOT / "src" / "hw" / "rtl" / "mem_ss" / "mem_config.svh"
+MEM_SS = ROOT / "src" / "hw" / "rtl" / "mem_ss" / "rv32u_mem_ss.sv"
 BUILD = SW / "build"
 
 _EXPECT = re.compile(r"(?:#|//)\s*expect:\s*(.*)")
 
 
 def ram_words() -> int:
-    m = re.search(r"`define RV32U_RAM_WORDS (\d+)", MEM_CONFIG.read_text())
+    m = re.search(r"parameter\s+int\s+RAM_WORDS\s*=\s*(\d+)", MEM_SS.read_text())
     if not m:
-        raise RuntimeError(f"{MEM_CONFIG.relative_to(ROOT)} has no RV32U_RAM_WORDS (decision D1)")
+        raise RuntimeError(f"{MEM_SS.relative_to(ROOT)} has no `parameter int RAM_WORDS = <n>` (decision D1)")
     return int(m.group(1))
 
 
@@ -49,7 +49,7 @@ class Program:
 
     def words(self) -> list[int]:
         if not self.hex.exists():
-            raise FileNotFoundError(f"{self.hex} is missing: run `make -C sw`")
+            raise FileNotFoundError(f"{self.hex} is missing: run `make -C src/sw`")
         return [int(w, 16) for w in self.hex.read_text().split()]
 
     def symbols(self) -> dict[str, int]:

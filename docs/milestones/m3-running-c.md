@@ -1,6 +1,6 @@
 # M3: Running C
 
-You'll choose the chip's memory (D1), run the provided C programs on your core, and write and run a C program of your own.
+You'll choose and build the chip's final RAM (D1), run the provided C programs on your core, and write and run a C program of your own.
 
 ## Before you start
 
@@ -9,13 +9,16 @@ You'll choose the chip's memory (D1), run the provided C programs on your core, 
 
 Time: about 6 hours.
 
-## Part 1: Choose the memory (D1)
+## Part 1: Build the final RAM (D1)
 
-1. Compare the three options in [chapter 7](../spec/07-memory-subsystem.md#the-ram-options). Estimate the flip-flop option's cost with `scripts/select-memory.py flops --words 64`, then switch back.
-2. Apply your choice: `scripts/select-memory.py <option>`, then `make -C sw clean`.
-3. Record the option and your reasons in `DESIGN.md` (D1).
+In M2 you used a quick 512-word flip-flop RAM. It simulates, but it is far too big for the chip (`make mem-check` says so). Now choose the RAM the chip will have, and build it.
 
-You should see: `scripts/select-memory.py --show` prints your option, and `make isa` still passes.
+1. Compare the three options in [chapter 7](../spec/07-memory-subsystem.md#the-ram-options), and choose one.
+2. Macros: write your wrapper in `src/hw/pd/wrappers/` ([Writing a macro wrapper](../spec/07-memory-subsystem.md#writing-a-macro-wrapper)), and instantiate it in `src/hw/rtl/mem_ss/rv32u_ram.sv` in place of the array. Flip-flops: keep the array, and choose how many words you can afford.
+3. Describe it: `RAM_WORDS`, the wrappers core, `info.yaml` and, for macros, `src/config.json` ([Applying your choice](../spec/07-memory-subsystem.md#applying-your-choice)). Then `make -C src/sw clean`.
+4. Record the option, the wrappers and your reasons in `DESIGN.md` (D1).
+
+You should see: `make mem-check` reports that everything agrees, and `make lint` and `make isa` still pass.
 
 ## Part 2: Run the C programs
 
@@ -39,7 +42,7 @@ Predict before you look: which instruction does `fib` execute most often?
 ## Part 3: A program of your own (required)
 
 1. Write `src/sw/c/<name>.c` that computes something you can check by hand: a checksum, a small matrix sum, a recursive sequence. Store the results in a `volatile int result[]`, and add an `// expect:` line ([chapter 8](../spec/08-software-flow.md#adding-a-program)).
-2. Run `make -C sw`. If `check_subset.py` rejects an instruction, rewrite that C ([Writing C for RV32u](../spec/08-software-flow.md#writing-c-for-rv32u)).
+2. Run `make -C src/sw`. If `check_subset.py` rejects an instruction, rewrite that C ([Writing C for RV32u](../spec/08-software-flow.md#writing-c-for-rv32u)).
 3. Run `make c`.
 
 You should see: your program in the list, passing.

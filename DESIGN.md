@@ -9,7 +9,8 @@ Name(s): _your name(s)_
 
 ## D1 Memory implementation
 
-- **Option:** _macro_512x32, macro_2x512x16, or flops with N words (`scripts/select-memory.py --show`)_
+- **Option:** _one 512x32 macro, two 512x16 macros, or flip-flops with N words (the `RAM_WORDS` parameter)_
+- **Wrappers and macro paths:** _your wrapper files, and each macro's instance path in config.json (or none, for flip-flops)_
 - **Why:** _the trade-off you made: area, tiles, risk, program size_
 - **Area and tiles:** _the estimate or the GDS action's result, and info.yaml `tiles`_
 - **Largest program it runs:** _words of code + data + stack that fit_

@@ -12,16 +12,16 @@ Time: about 10 hours.
 
 ## Part 1: The loader and the I/O (D2, D3, D4, D5)
 
-1. Design the loader in `src/io/rv32u_loader.sv` (D2): its pins, its protocol, and how it holds the core in reset.
-2. Design the I/O registers in `src/io/rv32u_io.sv` (D3) and how a finished program shows on the pins (D4).
-3. Map the pins in `src/rv32u_soc.sv`, and describe them in `info.yaml` and `docs/info.md` (D5).
+1. Design the loader in `src/hw/rtl/io_ss/rv32u_loader.sv` (D2): its pins, its protocol, and how it holds the core in reset.
+2. Design the I/O registers in `src/hw/rtl/io_ss/rv32u_io.sv` (D3) and how a finished program shows on the pins (D4).
+3. Map the pins in `src/hw/rtl/rv32u_soc.sv`, and describe them in `info.yaml` and `docs/info.md` (D5).
 4. Run `make test`: your changes must not break the provided tests.
 
 You should see: `make test` passes, and `make lint` is clean.
 
 ## Part 2: Test through the pins (required)
 
-The provided tests load programs through a backdoor. Now test the real path, as the chip will be used.
+The provided tests load programs through a simulation-only port. Now test the real path, as the chip will be used.
 
 1. Extend `test/test.py`: drive your loader through `ui_in`/`uio_in` to load a small program (for example a built `src/sw/build/isa/*.hex`). Then release the core and check your done signal (D4) on the outputs.
 2. Run `make tt-test`.

@@ -27,9 +27,9 @@ The skeleton fixes the module boundaries and their ports. The insides are yours.
 | `rv32u_immgen` | the I/S/B/U/J immediate of `insn` | `rv32u_pkg::imm_sel_e` |
 | `rv32u_control` | the FSM: the state register, the next-state logic, and every control signal | `ctrl_t` out, `status_t` in |
 | `rv32u_datapath` | the registers above, the operand multiplexers, the memory request, the retire port | `ctrl_t` in, `status_t` out |
-| `rv32u_core` | wires control and datapath together (provided) | the memory bus, the retire port, `trap` |
+| `rv32u_cpu_ss` | wires control and datapath together (provided) | the memory bus, the retire port, `trap` |
 
-`ctrl_t` and `status_t` are packed structs that you define in `src/hw/rtl/core/rv32u_ctrl.svh` (decision [D7](05-control-fsm.md)). The control unit and the datapath see the same definitions, so they cannot disagree. `status_t` comes with the fields the control unit needs (the IR, `mem_ready`, the ALU flags and the misalignment checks). Add more if your control needs them.
+`ctrl_t` and `status_t` are packed structs that you define in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` (decision [D7](05-control-fsm.md)). The control unit and the datapath see the same definitions, so they cannot disagree. `status_t` comes with the fields the control unit needs (the IR, `mem_ready`, the ALU flags and the misalignment checks). Add more if your control needs them.
 
 ## SystemVerilog rules
 
