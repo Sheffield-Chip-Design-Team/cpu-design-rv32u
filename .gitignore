@@ -1,0 +1,39 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+*.pem
+
+# Reference solution: instructors only, never committed
+solution/
+
+# FuseSoC / cocotb / simulation builds
+build/
+sim_build/
+results.xml
+*.fst
+*.vcd
+test/results.xml
+
+# Software builds
+sw/build/
+
+# Site builds (Quarto)
+docs/_site/
+docs/_book/
+docs/.quarto/
+_book/
+site/
