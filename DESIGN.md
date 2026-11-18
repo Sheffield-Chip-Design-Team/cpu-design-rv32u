@@ -48,13 +48,14 @@ Name(s): _your name(s)_
 - **Encoding:** _binary, one-hot, Gray ...: the value of each state_
 - **Why:** _CPI versus path length, area, simplicity, safety_
 
-## D7 Control signals
+## D7 Module structure and control
 
-- **Signal list:** _every field of ctrl_t and what it controls_
-- **Per-state table:** _the value of each signal in each state (a table, or a link to one in this repo)_
+- **Modules:** _each module inside rv32u_cpu_ss, what it does, and its file (a block diagram helps)_
+- **Interfaces:** _the signals or structs between them_
+- **Control signals:** _if you split control from the datapath: every control signal, and a table of its value per state (or a link to one); otherwise how your design decides each step_
 
-## D8 ALU operand selection
+## D8 Arithmetic resources
 
-- **Operand A sources:** _A, PC, OldPC ...: and when each is selected_
-- **Operand B sources:** _B, immediate, 4 ...: and when each is selected_
+- **ALUs and adders:** _each one, and what it computes_
+- **Operand sources:** _for each: its inputs, and when each is selected_
 - **Why this arrangement:** _what it shares, what it costs_

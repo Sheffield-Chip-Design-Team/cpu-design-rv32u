@@ -40,16 +40,16 @@ dv.harness.LockstepError: slt: retired instruction #3 differs from the reference
 
 ## Your unit tests
 
-The provided tests check the whole core. They will not tell you which of your blocks is wrong, so you must test your blocks on their own as well.
+The provided tests check the whole CPU. They will not tell you which part of it is wrong, so you must test your modules on their own as well.
 
-- R9.1: write cocotb unit tests for **at least** the register file, the ALU and the immediate generator. Exercise every operation and edge case: `x0`, overflow, signed comparisons, every immediate format with both signs.
-- R9.2: add a FuseSoC target for each, so `fusesoc ... run --target=<name> sharc:rv32u:tb` runs it. For example, in `src/hw/dv/rv32u_tb.core`:
+- R9.1: write cocotb unit tests for the modules inside your `rv32u_cpu_ss` (D7). Whatever your split, they must cover the register file behaviour (including `x0`), every ALU operation and comparison (overflow, signed extremes), and every immediate format with both signs. If those live in one module, test that module; if you have no sub-modules at all, explain in `DESIGN.md` how you tested these instead.
+- R9.2: add a FuseSoC target for each tested module, so `fusesoc ... run --target=<name> sharc:rv32u:tb` runs it. For example, in `src/hw/dv/rv32u_tb.core`:
 
   ```yaml
     unit_alu:
       description: ALU unit tests
       filesets: [rtl]
-      toplevel: rv32u_alu
+      toplevel: rv32u_alu        # your module's name
       flow: sim
       flow_options:
         tool: verilator

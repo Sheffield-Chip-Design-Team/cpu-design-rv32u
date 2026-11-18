@@ -12,25 +12,20 @@ Time: about 12 hours.
 
 ## Part 1: Design on paper first (D6, D7, D8)
 
-1. Design your states (D6): which states there are, what each one does, and the sequence each of the 14 instructions passes through ([chapter 5](../spec/05-control-fsm.md#where-to-start)). Then choose an encoding, and write `rv32u_pkg::state_e` in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh`.
-2. List every control signal the datapath needs (D7): one per register write enable, plus multiplexer selects, the memory request and the retire pulses. Write them as fields of `ctrl_t`.
-3. Decide the ALU's operand sources (D8). Check that every ALU operation your states perform is possible: PC + 4, PC-relative targets, A op B, A + immediate.
-4. Fill in a table of every signal's value in every state, and put it in `DESIGN.md` (D7).
+1. Design your states (D6): which states there are, what each one does, and the sequence each of the 14 instructions passes through ([chapter 5](../spec/05-control-fsm.md#where-to-start)). Then choose an encoding.
+2. Finish your structure (D7): where the state register lives, which module decides each step, and the signals that carry those decisions. If you separate control from the datapath, list every control signal (register write enables, multiplexer selects, the memory request, the retire pulse); a packed struct in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` keeps both sides in agreement.
+3. Decide your arithmetic (D8): one shared ALU, or more adders. Check that every arithmetic step your states perform is possible: PC + 4, PC-relative targets, A op B, A + immediate.
+4. Write a table of what happens in every state (which registers are written, from what), and put it in `DESIGN.md` (D7).
 
-You should see: a table with one row per state, where every write enable is 0 unless your D6 description of that state writes the register. Trace two instructions (say `LW` and `BEQ`) through it by hand before you write any RTL.
+You should see: a table with one row per state, where nothing is written unless your D6 description of that state writes it. Trace two instructions (say `LW` and `BEQ`) through it by hand before you write any RTL.
 
-## Part 2: The datapath
+## Part 2: Build the CPU
 
-1. In `src/hw/rtl/cpu_ss/rv32u_datapath.sv`, add the registers PC, OldPC, IR, MDR, A, B and ALUOut, each written only when its `ctrl` enable is high. Reset only the PC (to `rv32u_pkg::RESET_PC`).
-2. Connect the register file, the ALU and the immediate generator, with the operand multiplexers from D8.
-3. Drive the memory request from `ctrl`, following the [bus protocol](../spec/03-memory-bus.md).
-4. Fill in `status`, and drive the retire port ([chapter 6](../spec/06-retire-and-trap.md)).
-
-## Part 3: The FSM
-
-1. In `src/hw/rtl/cpu_ss/rv32u_control.sv`, write the next-state logic and every control signal, state by state, from your D7 table. Start every `always_comb` with defaults (`ctrl = '0;`).
-2. Decode the instruction (`status.insn`) for the 14 instructions, and trap on anything else.
-3. Run `make isa`. Start with `COCOTB_TEST_FILTER=lui make isa`: `LUI` needs the fewest steps.
+1. Write the modules of your D7 structure in `src/hw/rtl/cpu_ss/`, and instantiate them in `rv32u_cpu_ss.sv` in place of the starter's tied-off outputs. List new files in `rv32u_cpu_ss.core` and `info.yaml` (R4.1).
+2. The registers between steps change only when a state says so. Reset the PC to `rv32u_pkg::RESET_PC`.
+3. Drive the memory request following the [bus protocol](../spec/03-memory-bus.md), and the retire port and `trap` following [chapter 6](../spec/06-retire-and-trap.md).
+4. Decode the 14 instructions, and trap on anything else. Start every `always_comb` with defaults, so nothing is latched (R4.7).
+5. Run `make isa`. Start with `COCOTB_TEST_FILTER=lui make isa`: `LUI` needs the fewest steps.
 
 You should see, once everything works:
 

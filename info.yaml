@@ -20,11 +20,6 @@ project:
   # SRAM wrappers (src/hw/pd/wrappers/) here if you use macros (D1). make mem-check compares them.
   source_files:
     - "hw/rtl/rv32u_pkg.sv"
-    - "hw/rtl/cpu_ss/rv32u_regfile.sv"
-    - "hw/rtl/cpu_ss/rv32u_alu.sv"
-    - "hw/rtl/cpu_ss/rv32u_immgen.sv"
-    - "hw/rtl/cpu_ss/rv32u_control.sv"
-    - "hw/rtl/cpu_ss/rv32u_datapath.sv"
     - "hw/rtl/cpu_ss/rv32u_cpu_ss.sv"
     - "hw/rtl/mem_ss/rv32u_ram.sv"
     - "hw/rtl/mem_ss/rv32u_mem_ss.sv"

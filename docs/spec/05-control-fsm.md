@@ -1,6 +1,6 @@
 # 5. Control FSM
 
-The control unit is a finite-state machine that steps the datapath through each instruction. **Its states are yours to design**: how many there are, what each one does, the order an instruction passes through them, and how they are encoded (D6, D7, D8). The specification fixes only what the core does at its boundary: the instructions it executes ([chapter 2](02-isa.md)), the memory bus protocol ([chapter 3](03-memory-bus.md)), and the retire port and trap rule ([chapter 6](06-retire-and-trap.md)).
+The control unit is a finite-state machine that steps the datapath through each instruction. **Its states are yours to design**: how many there are, what each one does, the order an instruction passes through them, and how they are encoded (D6), as are the CPU's modules (D7) and its arithmetic (D8). The specification fixes only what the core does at its boundary: the instructions it executes ([chapter 2](02-isa.md)), the memory bus protocol ([chapter 3](03-memory-bus.md)), and the retire port and trap rule ([chapter 6](06-retire-and-trap.md)).
 
 ## What is required
 
@@ -47,24 +47,27 @@ Wait states come on top. A memory access lasts until `mem_ready` ([chapter 3](03
 **Record in DESIGN.md (D6):** a state diagram or table: every state, what it does and its next states. Then each state's encoding, and the cycles each instruction class takes with the provided memory (from `make isa`), with your reasons.
 :::
 
-::: {.callout-important title="Design decision D7: control signals"}
-**Decide:** the fields of `rv32u_pkg::ctrl_t`: every signal the control unit sends the datapath, and its value in every state (and, where it differs, for every instruction in that state).
+::: {.callout-important title="Design decision D7: module structure and control"}
+**Decide:** how `rv32u_cpu_ss` is split into modules, what each one does, and the signals between them. If you separate control from the datapath, that includes every control signal and its value in every state (and, where it differs, for every instruction in that state).
 
-**Constraints:** the datapath may change a register only when a control signal tells it to. Memory requests must follow the [bus protocol](03-memory-bus.md). The retire port must pulse exactly as [chapter 6](06-retire-and-trap.md) says.
+**Constraints:** the ports of `rv32u_cpu_ss` are fixed ([chapter 4](04-microarchitecture.md#what-is-fixed)). A register may change only when your control logic decides it should. Memory requests must follow the [bus protocol](03-memory-bus.md), and the retire port must pulse exactly as [chapter 6](06-retire-and-trap.md) says. The RTL must stay in the tools' common subset (R4.3-R4.7).
 
-**Options:** one write enable per register (PC, OldPC, IR, A/B, ALUOut, MDR, register file) with separate multiplexer selects; or fewer, wider "micro-operations" decoded in the datapath. More signals give a simpler datapath and a more readable table; fewer give a smaller interface.
+**Options:**
 
-**Record in DESIGN.md (D7):** a list of the signals, and a table of their values per state.
+- *The split:* the classic control + datapath + register file, ALU and immediate generator ([chapter 4](04-microarchitecture.md#a-suggested-structure)); a separate decoder; fewer, larger modules; or one module. Smaller modules are easier to unit-test and to reason about; every extra boundary is another interface to keep consistent.
+- *The control signals:* one write enable per register with separate multiplexer selects, collected in a packed struct (`rv32u_ctrl.svh`); or fewer, wider "micro-operations" decoded where they are used. More signals give a simpler datapath and a more readable table; fewer give a smaller interface.
+
+**Record in DESIGN.md (D7):** your modules and what each does (a block diagram helps), the interfaces between them, and, if you have a control/datapath split, the control signals with a table of their values per state.
 :::
 
-::: {.callout-important title="Design decision D8: ALU operand selection"}
-**Decide:** what the shared ALU's two operands can be, and which you select in each state: for example operand A from {A, PC, OldPC} and operand B from {B, immediate, 4}.
+::: {.callout-important title="Design decision D8: arithmetic resources"}
+**Decide:** which adders and ALUs the CPU has, and what feeds each one in each state. For example: one shared ALU with operand A from {A, PC, OldPC} and operand B from {B, immediate, 4}; or an ALU plus a separate adder for PC + 4 and branch targets.
 
-**Constraints:** every ALU operation your states perform must be possible. Across the 14 instructions that includes PC + 4, PC-relative targets (`AUIPC`, the branches, `JAL`), `A op B`, and `A` + an immediate (`ADDI`, `JALR`, `LW`, `SW`). Only one ALU operation happens per cycle.
+**Constraints:** every arithmetic step your states perform must be possible. Across the 14 instructions that includes PC + 4, PC-relative targets (`AUIPC`, the branches, `JAL`), `A op B`, and `A` + an immediate (`ADDI`, `JALR`, `LW`, `SW`).
 
-**Options:** wide multiplexers on both operands (simple to control); fewer sources with smart reuse (e.g. keeping PC + 4 in ALUOut); a separate small incrementer for PC + 4 (more area, fewer states or less multiplexing).
+**Options:** one shared ALU with wide operand multiplexers (the least arithmetic, more multiplexing and possibly more states); smart reuse (e.g. keeping PC + 4 in a register); dedicated adders (more area, fewer states or shorter paths).
 
-**Record in DESIGN.md (D8):** the sources of each operand, when each is selected, and why.
+**Record in DESIGN.md (D8):** each adder or ALU, the sources of its operands and when each is selected, and why.
 :::
 
 ## Check yourself

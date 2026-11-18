@@ -1,10 +1,46 @@
 # 4. Microarchitecture
 
-RV32u breaks each instruction into **single-cycle steps**. Each step does one ALU operation or one memory access, and the result is held in a register between steps. There is **one ALU**, shared by every step: it computes PC + 4, branch and jump targets, effective addresses and every R- and I-type result. There is no pipeline, so there are no hazards: an instruction finishes before the next one is fetched.
+RV32u is a **multi-cycle** core: it breaks each instruction into single-cycle steps, holds intermediate results in registers between them, and finishes one instruction before it fetches the next. There is no pipeline, so there are no hazards. How you organise it inside is yours.
 
-## Registers
+## What is fixed
 
-The architectural registers (the PC and `x0`-`x31`) and the usual non-architectural registers between steps. When each is written depends on your states (D6). You may add or drop non-architectural registers, if you record why in `DESIGN.md` (D7).
+Only the boundary. `rv32u_cpu_ss` (`src/hw/rtl/cpu_ss/rv32u_cpu_ss.sv`) is the CPU's top module, and its ports are fixed, because `rv32u_soc` and the tests connect to them:
+
+| Ports | Spec |
+|---|---|
+| `clk`, `rst_n` (synchronous, active low) | [chapter 5](05-control-fsm.md), R5.3 |
+| the memory bus: `mem_valid`, `mem_ready`, `mem_addr`, `mem_wdata`, `mem_wstrb`, `mem_rdata` | [chapter 3](03-memory-bus.md) |
+| `trap` | [chapter 6](06-retire-and-trap.md) |
+| the retire port: `rvfi_*` | [chapter 6](06-retire-and-trap.md) |
+
+Everything inside is your design (decisions D6-D8): which modules you write, what each one does, and how they talk to each other. It could all be one file. It probably shouldn't be: a split into small modules is easier to unit-test ([chapter 9](09-verification.md#your-unit-tests)), to read, and to debug.
+
+- R4.1: every file you add must be listed in `src/hw/rtl/cpu_ss/rv32u_cpu_ss.core` and in `info.yaml` `source_files` (`make mem-check` checks the two lists agree).
+- R4.2: `rv32u_cpu_ss` keeps its name and its ports.
+
+## A suggested structure
+
+Most multi-cycle designs, including the one in Harris & Harris section 7.4, separate **what holds and moves data** from **what decides**:
+
+| Module | Does |
+|---|---|
+| register file | 32 x 32-bit: two read ports, one write port; `x0` reads as zero |
+| ALU | `ADD`, `SUB`, `AND`, `OR`, `SLT`, and the comparisons the branches need (equal, signed less-than) |
+| immediate generator | the I, S, B, U and J immediates of an instruction |
+| datapath | the PC and the registers between steps, the multiplexers, the memory request, the retire port |
+| control | the FSM: the state register, the next-state logic, and the signals that steer the datapath |
+
+The package offers encodings for the ALU operation (`rv32u_pkg::alu_op_e`) and the immediate format (`rv32u_pkg::imm_sel_e`) if you want them. Types your modules share, such as a state enum or a struct of control signals, go in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` (it is `include`d inside `rv32u_pkg`, see R4.4).
+
+Other splits work as well. A few:
+
+- control and datapath merged into one module, with the register file, ALU and immediate generator as its sub-modules;
+- a separate decoder, turning the instruction into a struct of fields the control logic and the datapath both read;
+- a dedicated adder for PC + 4 and branch targets beside a smaller ALU (D8).
+
+Whatever you choose, record it in `DESIGN.md` (D7).
+
+The usual registers between steps, if you follow the classic design (you may add or drop non-architectural ones):
 
 | Register | Holds | Typically written |
 |---|---|---|
@@ -16,30 +52,15 @@ The architectural registers (the PC and `x0`-`x31`) and the usual non-architectu
 | `MDR` | the word loaded by `LW` | when the load completes, from `mem_rdata` |
 | register file | `x1`-`x31` | when an instruction writes its result |
 
-## Module structure
-
-The skeleton fixes the module boundaries and their ports. The insides are yours.
-
-| Module | Does | Interface |
-|---|---|---|
-| `rv32u_regfile` | 32 x 32-bit registers: two combinational read ports, one write port (on the clock edge, when `we`) | addresses, data |
-| `rv32u_alu` | `y = a op b` for `op` in `ADD, SUB, AND, OR, SLT`; `eq = (a == b)` and `lt = (a < b, signed)`, whatever `op` is | `rv32u_pkg::alu_op_e` |
-| `rv32u_immgen` | the I/S/B/U/J immediate of `insn` | `rv32u_pkg::imm_sel_e` |
-| `rv32u_control` | the FSM: the state register, the next-state logic, and every control signal | `ctrl_t` out, `status_t` in |
-| `rv32u_datapath` | the registers above, the operand multiplexers, the memory request, the retire port | `ctrl_t` in, `status_t` out |
-| `rv32u_cpu_ss` | wires control and datapath together (provided) | the memory bus, the retire port, `trap` |
-
-`ctrl_t` and `status_t` are packed structs that you define in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` (decision [D7](05-control-fsm.md)). The control unit and the datapath see the same definitions, so they cannot disagree. `status_t` comes with the fields the control unit needs (the IR, `mem_ready`, the ALU flags and the misalignment checks). Add more if your control needs them.
-
 ## SystemVerilog rules
 
 The same RTL must work in three tools: Verilator and Icarus Verilog 12 (simulation) and Yosys (synthesis for Tiny Tapeout). Their common subset rules out a few things, so:
 
-- R4.1: **No package imports.** Refer to package items as `rv32u_pkg::NAME` (`rv32u_pkg::ALU_ADD`, `rv32u_pkg::ctrl_t`). Yosys accepts one package, referred to by name; it rejects `import` in any position.
-- R4.2: **One package.** Your control types live in `rv32u_ctrl.svh`, which is `` `include``'d inside `rv32u_pkg`. Do not create another package.
-- R4.3: Assign struct fields one at a time (`assign status.insn = ir;`), not with a named assignment pattern (`'{insn: ...}`), which Icarus rejects.
-- R4.4: A conditional between two enum values needs an explicit cast for Icarus: `state_next = rv32u_pkg::state_e'(c ? rv32u_pkg::S_ONE : rv32u_pkg::S_TWO);`.
-- R4.5: Use `always_ff` for flip-flops and `always_comb` for logic. Give every `always_comb` output a default value at the top, so no latch is inferred.
+- R4.3: **No package imports.** Refer to package items as `rv32u_pkg::NAME` (`rv32u_pkg::ALU_ADD`, `rv32u_pkg::ctrl_t`). Yosys accepts one package, referred to by name; it rejects `import` in any position.
+- R4.4: **One package.** Your shared CPU types live in `rv32u_ctrl.svh`, which is `` `include``'d inside `rv32u_pkg`. Do not create another package.
+- R4.5: Assign struct fields one at a time (`assign status.insn = ir;`), not with a named assignment pattern (`'{insn: ...}`), which Icarus rejects.
+- R4.6: A conditional between two enum values needs an explicit cast for Icarus: `state_next = rv32u_pkg::state_e'(c ? rv32u_pkg::S_ONE : rv32u_pkg::S_TWO);`.
+- R4.7: Use `always_ff` for flip-flops and `always_comb` for logic. Give every `always_comb` output a default value at the top, so no latch is inferred.
 
 `make lint` runs Verilator on the design as Tiny Tapeout builds it. The tests compile it with Verilator or Icarus, so a construct one tool rejects shows up quickly.
 

@@ -6,7 +6,7 @@ This page maps the repository: which files you edit, what each `make` target run
 
 | Path | What | Yours? |
 |---|---|---|
-| `src/hw/rtl/cpu_ss/` | the CPU: register file, ALU, immediate generator, control FSM, datapath, `rv32u_ctrl.svh` | **yes** |
+| `src/hw/rtl/cpu_ss/` | the CPU: `rv32u_cpu_ss` (fixed ports) and the modules you split it into (D7), optional shared types in `rv32u_ctrl.svh` | **yes** |
 | `src/hw/rtl/io_ss/` | the program loader and the I/O registers (D2-D5) | **yes** |
 | `src/hw/rtl/rv32u_pkg.sv` | encodings, selectors, the memory map | no |
 | `src/hw/rtl/mem_ss/` | the memory subsystem: the bus adapter (provided), your RAM `rv32u_ram.sv` and its size, the `RAM_WORDS` parameter (D1) | the RAM |

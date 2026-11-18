@@ -4,7 +4,7 @@ RV32u (RV32I-Micro) is a **multi-cycle** RISC-V core for a **14-instruction subs
 
 You will:
 
-1. implement the core from the provided skeletons, to the fixed parts of this specification;
+1. design and implement the core inside a fixed top-level interface (`rv32u_cpu_ss`), structured as you choose, to the fixed parts of this specification;
 2. make the design decisions D1 to D8 that the specification leaves open, and record them in `DESIGN.md`;
 3. pass the provided tests: every instruction, then real C programs, each run in lockstep with a reference model;
 4. integrate the core into a Tiny Tapeout IHP SG13CMOS5L chip with on-chip SRAM, and harden it with the Tiny Tapeout GDS action.
@@ -30,10 +30,8 @@ Each chapter states **requirements**. They use "must", and the provided tests ch
 | Part | Files | Status |
 |---|---|---|
 | Encodings, ALU/immediate selectors, memory map | `src/hw/rtl/rv32u_pkg.sv` | provided, fixed |
-| Control interface types (states, control signals) | `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` | **yours** (D6, D7, D8) |
-| Register file, ALU, immediate generator | `src/hw/rtl/cpu_ss/rv32u_{regfile,alu,immgen}.sv` | **yours** (skeletons with ports) |
-| Control FSM, datapath | `src/hw/rtl/cpu_ss/rv32u_{control,datapath}.sv` | **yours** (skeletons with ports) |
-| CPU wiring | `src/hw/rtl/cpu_ss/rv32u_cpu_ss.sv` | provided |
+| The CPU: `rv32u_cpu_ss` (fixed ports), and every module you split it into | `src/hw/rtl/cpu_ss/` | **yours** (D6, D7, D8) |
+| Shared CPU types (optional: states, control structs) | `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` | **yours** |
 | Memory subsystem bus adapter | `src/hw/rtl/mem_ss/rv32u_mem_ss.sv` | provided |
 | The RAM, its size and any SRAM macro wrappers | `src/hw/rtl/mem_ss/rv32u_ram.sv`, `RAM_WORDS` in `rv32u_mem_ss.sv`, `src/hw/pd/wrappers/` | **yours** (D1) |
 | I/O region, program loader | `src/hw/rtl/io_ss/` | **yours** (stubs: D2, D3, D4, D5) |
@@ -52,8 +50,8 @@ Each chapter states **requirements**. They use "must", and the provided tests ch
 | D4 | How a finished program (or a trap) is signalled | [Tiny Tapeout integration](10-tiny-tapeout.md) |
 | D5 | The pinout | [Tiny Tapeout integration](10-tiny-tapeout.md) |
 | D6 | FSM states, their sequence per instruction, and their encoding | [Control FSM](05-control-fsm.md) |
-| D7 | The control signals and their value in every state | [Control FSM](05-control-fsm.md) |
-| D8 | ALU operand selection | [Control FSM](05-control-fsm.md) |
+| D7 | The CPU's module structure, and its control signals | [Control FSM](05-control-fsm.md) |
+| D8 | Arithmetic resources: ALUs, adders and their operands | [Control FSM](05-control-fsm.md) |
 
 ## Block diagram
 

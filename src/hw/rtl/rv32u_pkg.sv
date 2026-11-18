@@ -2,9 +2,9 @@
 // RV32u (RV32I-Micro) shared definitions: encodings, the ALU and immediate selectors,
 // and the fixed memory map (spec: docs/spec/02-isa.md, 07-memory-subsystem.md).
 //
-// Provided: do not change the encodings or the memory map. The control interface
-// (FSM states, control signals: decisions D6, D7, D8) is yours: it lives in
-// src/hw/rtl/cpu_ss/rv32u_ctrl.svh, which is `include'd at the end of this package.
+// Provided: do not change the encodings or the memory map. The ALU and immediate
+// selectors below are optional helpers: use them, change them or ignore them. Your own
+// shared CPU types go in src/hw/rtl/cpu_ss/rv32u_ctrl.svh, `include'd at the end.
 //
 // Refer to anything here as rv32u_pkg::<name>. Do not `import rv32u_pkg::*`: Yosys,
 // which Tiny Tapeout synthesises with, does not support package imports.
@@ -37,7 +37,7 @@ package rv32u_pkg;
   localparam logic [6:0] F7_ZERO    = 7'b0000000;
   localparam logic [6:0] F7_SUB     = 7'b0100000;
 
-  // ---- ALU operation (the interface between control and rv32u_alu) -------------------
+  // ---- ALU operation (optional helper, for an ALU module if you have one) -------------
   typedef enum logic [2:0] {
     ALU_ADD = 3'd0,
     ALU_SUB = 3'd1,
@@ -46,7 +46,7 @@ package rv32u_pkg;
     ALU_SLT = 3'd4
   } alu_op_e;
 
-  // ---- immediate format (the interface between control and rv32u_immgen) -------------
+  // ---- immediate format (optional helper, for an immediate generator) ----------------
   typedef enum logic [2:0] {
     IMM_I = 3'd0,
     IMM_S = 3'd1,
@@ -63,7 +63,7 @@ package rv32u_pkg;
 
   localparam logic [31:0] RESET_PC = 32'h0000_0000;
 
-  // ---- the control interface (yours: decisions D6, D7, D8) ---------------------------
+  // ---- your shared CPU types (optional; decisions D6, D7) ----------------------------
 `include "rv32u_ctrl.svh"
 
 endpackage

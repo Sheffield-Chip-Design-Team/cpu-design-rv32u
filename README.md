@@ -34,7 +34,7 @@ Add `SIM=icarus` to simulate with Icarus Verilog instead of Verilator (Verilator
 
 | Path | What |
 |---|---|
-| `src/hw/rtl/cpu_ss/` | **your CPU**: register file, ALU, immediate generator, control FSM, datapath |
+| `src/hw/rtl/cpu_ss/` | **your CPU**: `rv32u_cpu_ss` has fixed ports; how you structure the inside is up to you |
 | `src/hw/rtl/io_ss/` | **your** program loader and I/O registers |
 | `src/hw/rtl/mem_ss/` | the memory subsystem: the provided bus adapter, and **your** RAM |
 | `src/hw/pd/` | the Tiny Tapeout top level, the macro black boxes, the PDN config, and **your** SRAM wrappers (`wrappers/`) |

@@ -15,7 +15,7 @@ RV32u is taped out as a [Tiny Tapeout](https://tinytapeout.com) project on the *
 - R10.1: **Pins:** only the Tiny Tapeout ports (`ui_in`, `uo_out`, `uio_in`, `uio_out`, `uio_oe`, `clk`, `rst_n`, `ena`). Every output must be driven. `info.yaml` must describe every pin you use (D5).
 - R10.2: **Clock:** the design must meet timing at **50 MHz** (`CLOCK_PERIOD` 20 ns in `src/config.json`; `clock_hz` in `info.yaml`).
 - R10.3: **Tiles:** the area in `info.yaml` (`tiles`, set with the memory option: [chapter 7](07-memory-subsystem.md)) must fit. With an SRAM macro, that is 6x2.
-- R10.4: **Synthesis:** the RTL must stay in the subset Yosys supports ([chapter 4](04-microarchitecture.md), R4.1-R4.5).
+- R10.4: **Synthesis:** the RTL must stay in the subset Yosys supports ([chapter 4](04-microarchitecture.md), R4.3-R4.7).
 - R10.5: **SRAM macros:** placed and powered by `src/config.json` (your SRAM entries, [chapter 7](07-memory-subsystem.md#applying-your-choice)) and the LibreLane plugin `librelane_plugin_sram_pdn.py` (from Tiny Tapeout's SRAM example). Instance names in `MACROS` must match your RTL hierarchy, for example `u_soc.u_mem.u_ram.u_sram.u_macro` (`make mem-check` checks it).
 
 ::: {.callout-warning title="Make the core observable"}
