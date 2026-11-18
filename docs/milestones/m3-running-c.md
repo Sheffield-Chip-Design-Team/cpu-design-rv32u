@@ -14,7 +14,7 @@ Time: about 6 hours.
 In M2 you used a quick 512-word flip-flop RAM. It simulates, but it is far too big for the chip (`make mem-check` says so). Now choose the RAM the chip will have, and build it.
 
 1. Compare the three options in [chapter 7](../spec/07-memory-subsystem.md#the-ram-options), and choose one.
-2. Macros: write your wrapper in `src/hw/pd/wrappers/` ([Writing a macro wrapper](../spec/07-memory-subsystem.md#writing-a-macro-wrapper)), and instantiate it in `src/hw/rtl/mem_ss/rv32u_ram.sv` in place of the array. Flip-flops: keep the array, and choose how many words you can afford.
+2. Macros: write your wrapper in `src/hw/pd/wrappers/` ([Writing a macro wrapper](../spec/07-memory-subsystem.md#writing-a-macro-wrapper)), and instantiate it in your memory subsystem in place of the flip-flop array. Flip-flops: keep the array, and choose how many words you can afford.
 3. Describe it: `RAM_WORDS`, the wrappers core, `info.yaml` and, for macros, `src/config.json` ([Applying your choice](../spec/07-memory-subsystem.md#applying-your-choice)). Then `make -C src/sw clean`.
 4. Record the option, the wrappers and your reasons in `DESIGN.md` (D1).
 

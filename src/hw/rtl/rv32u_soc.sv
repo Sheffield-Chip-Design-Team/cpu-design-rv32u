@@ -44,39 +44,39 @@ module rv32u_soc (
   logic [7:0]  ld_uio_out, ld_uio_oe, gpio_out, gpio_oe;
 
   rv32u_loader u_loader (
-      .clk        (clk),
-      .rst_n      (rst_n),
-      .core_rst_n (core_rst_n),
-      .ld_we      (ld_we),
-      .ld_addr    (ld_addr),
-      .ld_wdata   (ld_wdata),
-      .ui_in      (ui_in),
-      .uio_in     (uio_in),
-      .uio_out    (ld_uio_out),
-      .uio_oe     (ld_uio_oe)
+    .clk        (clk),
+    .rst_n      (rst_n),
+    .core_rst_n (core_rst_n),
+    .ld_we      (ld_we),
+    .ld_addr    (ld_addr),
+    .ld_wdata   (ld_wdata),
+    .ui_in      (ui_in),
+    .uio_in     (uio_in),
+    .uio_out    (ld_uio_out),
+    .uio_oe     (ld_uio_oe)
   );
 
-  rv32u_cpu_ss u_cpu (
-      .clk            (clk),
-      .rst_n          (cpu_rst_n),
-      .mem_valid      (mem_valid),
-      .mem_ready      (mem_ready),
-      .mem_addr       (mem_addr),
-      .mem_wdata      (mem_wdata),
-      .mem_wstrb      (mem_wstrb),
-      .mem_rdata      (mem_rdata),
-      .trap           (trap),
-      .rvfi_valid     (rvfi_valid),
-      .rvfi_trap      (rvfi_trap),
-      .rvfi_pc        (rvfi_pc),
-      .rvfi_pc_next   (rvfi_pc_next),
-      .rvfi_insn      (rvfi_insn),
-      .rvfi_rd_addr   (rvfi_rd_addr),
-      .rvfi_rd_wdata  (rvfi_rd_wdata),
-      .rvfi_mem_addr  (rvfi_mem_addr),
-      .rvfi_mem_wstrb (rvfi_mem_wstrb),
-      .rvfi_mem_wdata (rvfi_mem_wdata),
-      .rvfi_mem_rdata (rvfi_mem_rdata)
+  rv32u_cpu u_cpu (
+    .clk            (clk),
+    .rst_n          (cpu_rst_n),
+    .mem_valid      (mem_valid),
+    .mem_ready      (mem_ready),
+    .mem_addr       (mem_addr),
+    .mem_wdata      (mem_wdata),
+    .mem_wstrb      (mem_wstrb),
+    .mem_rdata      (mem_rdata),
+    .trap           (trap),
+    .rvfi_valid     (rvfi_valid),
+    .rvfi_trap      (rvfi_trap),
+    .rvfi_pc        (rvfi_pc),
+    .rvfi_pc_next   (rvfi_pc_next),
+    .rvfi_insn      (rvfi_insn),
+    .rvfi_rd_addr   (rvfi_rd_addr),
+    .rvfi_rd_wdata  (rvfi_rd_wdata),
+    .rvfi_mem_addr  (rvfi_mem_addr),
+    .rvfi_mem_wstrb (rvfi_mem_wstrb),
+    .rvfi_mem_wdata (rvfi_mem_wdata),
+    .rvfi_mem_rdata (rvfi_mem_rdata)
   );
 
   rv32u_mem_ss u_mem (

@@ -4,7 +4,7 @@
 //
 // Provided: do not change the encodings or the memory map. The ALU and immediate
 // selectors below are optional helpers: use them, change them or ignore them. Your own
-// shared CPU types go in src/hw/rtl/cpu_ss/rv32u_ctrl.svh, `include'd at the end.
+// shared CPU types go in src/hw/rtl/cpu/rv32u_ctrl.svh, `include'd at the end.
 //
 // Refer to anything here as rv32u_pkg::<name>. Do not `import rv32u_pkg::*`: Yosys,
 // which Tiny Tapeout synthesises with, does not support package imports.

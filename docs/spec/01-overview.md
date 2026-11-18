@@ -4,7 +4,7 @@ RV32u (RV32I-Micro) is a **multi-cycle** RISC-V core for a **14-instruction subs
 
 You will:
 
-1. design and implement the core inside a fixed top-level interface (`rv32u_cpu_ss`), structured as you choose, to the fixed parts of this specification;
+1. design and implement the core inside a fixed top-level interface (`rv32u_cpu`), structured as you choose, to the fixed parts of this specification;
 2. make the design decisions D1 to D8 that the specification leaves open, and record them in `DESIGN.md`;
 3. pass the provided tests: every instruction, then real C programs, each run in lockstep with a reference model;
 4. integrate the core into a Tiny Tapeout IHP SG13CMOS5L chip with on-chip SRAM, and harden it with the Tiny Tapeout GDS action.
@@ -30,10 +30,9 @@ Each chapter states **requirements**. They use "must", and the provided tests ch
 | Part | Files | Status |
 |---|---|---|
 | Encodings, ALU/immediate selectors, memory map | `src/hw/rtl/rv32u_pkg.sv` | provided, fixed |
-| The CPU: `rv32u_cpu_ss` (fixed ports), and every module you split it into | `src/hw/rtl/cpu_ss/` | **yours** (D6, D7, D8) |
-| Shared CPU types (optional: states, control structs) | `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` | **yours** |
-| Memory subsystem bus adapter | `src/hw/rtl/mem_ss/rv32u_mem_ss.sv` | provided |
-| The RAM, its size and any SRAM macro wrappers | `src/hw/rtl/mem_ss/rv32u_ram.sv`, `RAM_WORDS` in `rv32u_mem_ss.sv`, `src/hw/pd/wrappers/` | **yours** (D1) |
+| The CPU: `rv32u_cpu` (fixed ports), and every module you split it into | `src/hw/rtl/cpu/` | **yours** (D6, D7, D8) |
+| Shared CPU types (optional: states, control structs) | `src/hw/rtl/cpu/rv32u_ctrl.svh` | **yours** |
+| The memory subsystem: `rv32u_mem_ss` (fixed ports, `RAM_WORDS`), the RAM inside it, and any SRAM macro wrappers | `src/hw/rtl/mem_ss/`, `src/hw/pd/wrappers/` | **yours** (D1) |
 | I/O region, program loader | `src/hw/rtl/io_ss/` | **yours** (stubs: D2, D3, D4, D5) |
 | System and Tiny Tapeout top level | `src/hw/rtl/rv32u_soc.sv`, `src/hw/pd/tt_um_sharc_rv32u.sv` | provided (adapt the pin mapping: D5) |
 | Reference model, ISA and C tests | `src/hw/dv/`, `src/sw/` | provided |
@@ -65,10 +64,10 @@ Each chapter states **requirements**. They use "must", and the provided tests ch
              | core reset |  load        ^ I/O region (addr[31] = 1)
              v            v  port        |
       +-------------+   +--------------------------------+
-      | rv32u_cpu_ss  |   |           rv32u_mem_ss            |
+      | rv32u_cpu  |   |           rv32u_mem_ss            |
       |  control    |==>| valid/ready slave, decode      |
-      |  datapath   |<==|   RAM  [0, RAM_BYTES)  ------> rv32u_ram: macro_512x32,
-      +-------------+   |   I/O  addr[31] = 1            |   macro_2x512x16 or flops (D1)
+      |  datapath   |<==|   RAM  [0, RAM_BYTES)  ------> 1 x 512x32 macro,
+      +-------------+   |   I/O  addr[31] = 1            |   2 x 512x16 or flops (D1)
         | retire port   +--------------------------------+
         v (verification only)
 ```

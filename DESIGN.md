@@ -44,13 +44,13 @@ Name(s): _your name(s)_
 
 - **States:** _every state, what it does, and its next states (a table or a diagram, or a link to one in this repo)_
 - **Sequence per instruction:** _the states each instruction class passes through_
-- **Cycles per instruction:** _with the provided memory, from the `make isa` log: LUI, branches, ALU/ADDI/AUIPC, JAL, JALR, LW, SW_
+- **Cycles per instruction:** _with your memory subsystem, from the `make isa` log: LUI, branches, ALU/ADDI/AUIPC, JAL, JALR, LW, SW_
 - **Encoding:** _binary, one-hot, Gray ...: the value of each state_
 - **Why:** _CPI versus path length, area, simplicity, safety_
 
 ## D7 Module structure and control
 
-- **Modules:** _each module inside rv32u_cpu_ss, what it does, and its file (a block diagram helps)_
+- **Modules:** _each module inside rv32u_cpu, what it does, and its file (a block diagram helps)_
 - **Interfaces:** _the signals or structs between them_
 - **Control signals:** _if you split control from the datapath: every control signal, and a table of its value per state (or a link to one); otherwise how your design decides each step_
 

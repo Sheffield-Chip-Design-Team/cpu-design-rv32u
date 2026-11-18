@@ -25,7 +25,7 @@ endif
 
 # SystemVerilog, the IHP SRAM models' functional path, and no SRAM black boxes
 COMPILE_ARGS += -g2012 -DSIM -DFUNCTIONAL
-COMPILE_ARGS += -I$(SRC_DIR)/hw/rtl/cpu_ss
+COMPILE_ARGS += -I$(SRC_DIR)/hw/rtl/cpu
 
 ifneq ($(GATES),yes)
 

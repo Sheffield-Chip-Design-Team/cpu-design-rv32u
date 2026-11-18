@@ -28,7 +28,7 @@ The core has one **unified (von Neumann) memory bus** for instructions and data,
 
 Each diagram counts cycles from the left; cycle *n* is the period between ticks *n* and *n* + 1, and a transaction completes on the rising edge at the end of the cycle in which `mem_valid` and `mem_ready` are both high. Hatched values are don't-care.
 
-A **read** with the provided RAM (one wait state). `rv32u_mem_ss` accepts the request in cycle 1 and starts the RAM read on the edge at its end. The word returns with `mem_ready` in cycle 2, and the core latches it on the edge at the end of cycle 2:
+A **read** from a RAM with one wait state, as the [suggested memory subsystem](07-memory-subsystem.md#a-suggested-structure) gives. It accepts the request in cycle 1 and starts the RAM read on the edge at its end. The word returns with `mem_ready` in cycle 2, and the core latches it on the edge at the end of cycle 2:
 
 ![Read, one wait state](../assets/img/wavedrom/bus-read.svg){.wavedrom fig-alt="WaveDrom timing diagram: mem_valid high in cycles 1 and 2 with mem_addr and mem_wstrb 0000 stable, mem_ready high in cycle 2 with mem_rdata valid in cycle 2."}
 
@@ -44,7 +44,7 @@ A slower slave, with **three wait states** (R3.2, R3.5). Until `mem_ready` rises
 
 ![Back-to-back transactions and zero-wait-state I/O](../assets/img/wavedrom/bus-back-to-back.svg){.wavedrom fig-alt="WaveDrom timing diagram: a RAM read of A in cycles 1 and 2, then an I/O write to B in cycle 3 and an I/O read of C in cycle 4, each completing in the same cycle; mem_ready is high from cycle 2 to cycle 4."}
 
-So with the provided RAM, every fetch and every `LW`/`SW` takes at least two cycles of the state that makes it. The diagrams are rendered from `docs/assets/wavedrom/*.json` by `scripts/render-wavedrom.py`.
+So with a one-wait-state RAM, every fetch and every `LW`/`SW` takes at least two cycles of the state that makes it. The diagrams are rendered from `docs/assets/wavedrom/*.json` by `scripts/render-wavedrom.py`.
 
 ## Check yourself
 

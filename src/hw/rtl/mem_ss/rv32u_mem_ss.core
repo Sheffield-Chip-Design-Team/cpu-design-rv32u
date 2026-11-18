@@ -1,14 +1,16 @@
 CAPI=2:
 name: sharc:rv32u:mem_ss:0.1.0
 description: >
-  RV32u memory subsystem (provided): the valid/ready bus slave, the address decode, the
-  I/O region and the loader port. The RAM inside it is sharc:rv32u:ram (yours, D1).
+  RV32u memory subsystem: YOURS (decision D1, spec 07). List every file you add in
+  mem_ss/ here (and in info.yaml source_files), with rv32u_mem_ss.sv last. SRAM macro
+  wrappers come from sharc:rv32u:wrappers (src/hw/pd/wrappers/).
 
 filesets:
   rtl:
     depend:
-      - sharc:rv32u:ram
+      - sharc:rv32u:wrappers
     files:
+      # - rv32u_ram.sv:    {file_type: systemVerilogSource}   (your files, for example)
       - rv32u_mem_ss.sv: {file_type: systemVerilogSource}
 
 targets:

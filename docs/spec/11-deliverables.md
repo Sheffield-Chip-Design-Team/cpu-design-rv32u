@@ -2,7 +2,7 @@
 
 ## Deliverables
 
-1. **The core:** your `src/hw/rtl/cpu_ss/` (register file, ALU, immediate generator, control unit, datapath and `rv32u_ctrl.svh`).
+1. **The core:** your `src/hw/rtl/cpu/` (register file, ALU, immediate generator, control unit, datapath and `rv32u_ctrl.svh`).
 2. **The chip:** your loader and I/O (`src/hw/rtl/io_ss/`), the pin mapping in `src/hw/rtl/rv32u_soc.sv`, `info.yaml` (pinout) and `docs/info.md` (how it works, how to test it).
 3. **Unit tests:** for at least the register file, the ALU and the immediate generator ([chapter 9](09-verification.md)), with FuseSoC targets.
 4. **At least one C program of your own** in `src/sw/c/`, with an `expect:` line, that the C tests run.

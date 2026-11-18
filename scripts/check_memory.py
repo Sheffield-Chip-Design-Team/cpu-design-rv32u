@@ -3,7 +3,7 @@
 
     make mem-check          (uv run python scripts/check_memory.py)
 
-You build the RAM yourself (src/hw/rtl/mem_ss/rv32u_ram.sv, and SRAM macro wrappers in
+You build the memory subsystem yourself (src/hw/rtl/mem_ss/, and SRAM macro wrappers in
 src/hw/pd/wrappers/), and then describe it by hand in four places: the RAM_WORDS
 parameter of rv32u_mem_ss.sv (its size), the FuseSoC cores, info.yaml (source files, tiles) and src/config.json (macro
 placement and power). This script checks them against each other and against the RTL:

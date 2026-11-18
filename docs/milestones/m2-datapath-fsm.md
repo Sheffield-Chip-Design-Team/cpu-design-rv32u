@@ -6,14 +6,14 @@ You'll design the control interface (D6, D7, D8), build the datapath and the con
 
 - Finish [M1](m1-building-blocks.md).
 - Read [Control FSM](../spec/05-control-fsm.md) and [Retire port and traps](../spec/06-retire-and-trap.md).
-- Give the core a RAM to run from. The starter `src/hw/rtl/mem_ss/rv32u_ram.sv` reads 0 for every word, so nothing can pass yet. Write a flip-flop array there that meets [R7.1-R7.4](../spec/07-memory-subsystem.md#the-ram-interface): a dozen lines. Keep `RAM_WORDS` (in `rv32u_mem_ss.sv`) at 512 for now; in M3 you choose the RAM the chip will really have.
+- Finish M1 Part 4: the CPU needs your first memory subsystem to fetch from.
 
 Time: about 12 hours.
 
 ## Part 1: Design on paper first (D6, D7, D8)
 
 1. Design your states (D6): which states there are, what each one does, and the sequence each of the 14 instructions passes through ([chapter 5](../spec/05-control-fsm.md#where-to-start)). Then choose an encoding.
-2. Finish your structure (D7): where the state register lives, which module decides each step, and the signals that carry those decisions. If you separate control from the datapath, list every control signal (register write enables, multiplexer selects, the memory request, the retire pulse); a packed struct in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` keeps both sides in agreement.
+2. Finish your structure (D7): where the state register lives, which module decides each step, and the signals that carry those decisions. If you separate control from the datapath, list every control signal (register write enables, multiplexer selects, the memory request, the retire pulse); a packed struct in `src/hw/rtl/cpu/rv32u_ctrl.svh` keeps both sides in agreement.
 3. Decide your arithmetic (D8): one shared ALU, or more adders. Check that every arithmetic step your states perform is possible: PC + 4, PC-relative targets, A op B, A + immediate.
 4. Write a table of what happens in every state (which registers are written, from what), and put it in `DESIGN.md` (D7).
 
@@ -21,7 +21,7 @@ You should see: a table with one row per state, where nothing is written unless 
 
 ## Part 2: Build the CPU
 
-1. Write the modules of your D7 structure in `src/hw/rtl/cpu_ss/`, and instantiate them in `rv32u_cpu_ss.sv` in place of the starter's tied-off outputs. List new files in `rv32u_cpu_ss.core` and `info.yaml` (R4.1).
+1. Write the modules of your D7 structure in `src/hw/rtl/cpu/`, and instantiate them in `rv32u_cpu.sv` in place of the starter's tied-off outputs. List new files in `rv32u_cpu.core` and `info.yaml` (R4.1).
 2. The registers between steps change only when a state says so. Reset the PC to `rv32u_pkg::RESET_PC`.
 3. Drive the memory request following the [bus protocol](../spec/03-memory-bus.md), and the retire port and `trap` following [chapter 6](../spec/06-retire-and-trap.md).
 4. Decode the 14 instructions, and trap on anything else. Start every `always_comb` with defaults, so nothing is latched (R4.7).

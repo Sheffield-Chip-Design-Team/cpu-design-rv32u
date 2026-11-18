@@ -4,7 +4,7 @@ RV32u is a **multi-cycle** core: it breaks each instruction into single-cycle st
 
 ## What is fixed
 
-Only the boundary. `rv32u_cpu_ss` (`src/hw/rtl/cpu_ss/rv32u_cpu_ss.sv`) is the CPU's top module, and its ports are fixed, because `rv32u_soc` and the tests connect to them:
+Only the boundary. `rv32u_cpu` (`src/hw/rtl/cpu/rv32u_cpu.sv`) is the CPU's top module, and its ports are fixed, because `rv32u_soc` and the tests connect to them:
 
 | Ports | Spec |
 |---|---|
@@ -15,8 +15,8 @@ Only the boundary. `rv32u_cpu_ss` (`src/hw/rtl/cpu_ss/rv32u_cpu_ss.sv`) is the C
 
 Everything inside is your design (decisions D6-D8): which modules you write, what each one does, and how they talk to each other. It could all be one file. It probably shouldn't be: a split into small modules is easier to unit-test ([chapter 9](09-verification.md#your-unit-tests)), to read, and to debug.
 
-- R4.1: every file you add must be listed in `src/hw/rtl/cpu_ss/rv32u_cpu_ss.core` and in `info.yaml` `source_files` (`make mem-check` checks the two lists agree).
-- R4.2: `rv32u_cpu_ss` keeps its name and its ports.
+- R4.1: every file you add must be listed in `src/hw/rtl/cpu/rv32u_cpu.core` and in `info.yaml` `source_files` (`make mem-check` checks the two lists agree).
+- R4.2: `rv32u_cpu` keeps its name and its ports.
 
 ## A suggested structure
 
@@ -30,7 +30,7 @@ Most multi-cycle designs, including the one in Harris & Harris section 7.4, sepa
 | datapath | the PC and the registers between steps, the multiplexers, the memory request, the retire port |
 | control | the FSM: the state register, the next-state logic, and the signals that steer the datapath |
 
-The package offers encodings for the ALU operation (`rv32u_pkg::alu_op_e`) and the immediate format (`rv32u_pkg::imm_sel_e`) if you want them. Types your modules share, such as a state enum or a struct of control signals, go in `src/hw/rtl/cpu_ss/rv32u_ctrl.svh` (it is `include`d inside `rv32u_pkg`, see R4.4).
+The package offers encodings for the ALU operation (`rv32u_pkg::alu_op_e`) and the immediate format (`rv32u_pkg::imm_sel_e`) if you want them. Types your modules share, such as a state enum or a struct of control signals, go in `src/hw/rtl/cpu/rv32u_ctrl.svh` (it is `include`d inside `rv32u_pkg`, see R4.4).
 
 Other splits work as well. A few:
 

@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
-// RV32u memory subsystem (spec 07-memory-subsystem.md). This file is provided; the RAM
-// it instantiates, rv32u_ram (rv32u_ram.sv), is yours (decision D1).
+// RV32u memory subsystem: YOURS TO DESIGN AND IMPLEMENT (decision D1, spec 07).
 //
-// A valid/ready bus slave (spec 03-memory-bus.md) that decodes the address:
-//   [0, RAM_BYTES)        on-chip RAM: one wait state (mem_ready one cycle after the
-//                         request is accepted), because every RAM option reads
-//                         synchronously.
-//   addr[31] = 1          the I/O region: forwarded to the io_* port (decision D3).
-//   anything else         unmapped: completes with one wait state, reads return 0,
-//                         writes are ignored.
-// The loader port (decision D2) writes RAM words directly; use it only while the core
-// is held in reset.
+// The ports and the RAM_WORDS parameter are fixed: rv32u_soc, your loader, the tests and
+// the software build all use them. Everything inside is yours: a bus slave for the CPU
+// (spec 03), the address decode (RAM, unmapped, the I/O region), the loader port, and
+// the RAM itself, built from flip-flops or from your IHP SRAM macro wrappers
+// (src/hw/pd/wrappers/). Put sub-modules in their own files in this directory, and list
+// every file in rv32u_mem_ss.core and info.yaml source_files.
+//
+// The starter never answers a request, so the CPU waits forever on its first fetch.
 
 `default_nettype none
 
 module rv32u_mem_ss #(
+  // The RAM size in 32-bit words (decision D1): 512 for the SRAM macros, 16-512 for
+  // flip-flops. The software build and the tests read this value too.
   parameter int RAM_WORDS = 512
 ) (
     input  logic        clk,
@@ -42,57 +42,15 @@ module rv32u_mem_ss #(
     input  logic [31:0] ld_wdata
 );
 
-  localparam int AW = $clog2(RAM_WORDS);
-  localparam logic [31:0] RAM_BYTES = RAM_WORDS * 4;
+  // TODO(D1): your memory subsystem.
+  assign mem_ready = 1'b0;
+  assign mem_rdata = 32'd0;
+  assign io_valid  = 1'b0;
+  assign io_addr   = 32'd0;
+  assign io_wdata  = 32'd0;
+  assign io_wstrb  = 4'd0;
 
-  logic is_io, is_ram;
-  assign is_io  = mem_addr[31];
-  assign is_ram = !is_io && (mem_addr < RAM_BYTES);
+  wire _unused = &{1'b0, clk, rst_n, mem_valid, mem_addr, mem_wdata, mem_wstrb,
+                   io_ready, io_rdata, ld_we, ld_addr, ld_wdata};
 
-  // one transaction in flight: `pending` is high in the cycle the reply is returned
-  logic pending, pending_ram;
-  logic accept;
-  assign accept = mem_valid && !is_io && !pending;
-
-  always_ff @(posedge clk) begin
-    if (!rst_n) begin
-      pending     <= 1'b0;
-      pending_ram <= 1'b0;
-    end else begin
-      pending     <= accept;
-      pending_ram <= accept && is_ram;
-    end
-  end
-
-  // ---- the RAM (yours: rv32u_ram.sv, decision D1) --------------------------------------
-  logic          ram_en, ram_we;
-  logic [AW-1:0] ram_addr;
-  logic [31:0]   ram_wdata, ram_rdata;
-
-  // the loader has priority (it only runs while the core is held in reset)
-  assign ram_en    = ld_we || (accept && is_ram);
-  assign ram_we    = ld_we || (mem_wstrb == 4'b1111);
-  assign ram_addr  = ld_we ? ld_addr[AW+1:2] : mem_addr[AW+1:2];
-  assign ram_wdata = ld_we ? ld_wdata : mem_wdata;
-
-  rv32u_ram #(.WORDS(RAM_WORDS)) u_ram (
-      .clk   (clk),
-      .en    (ram_en),
-      .we    (ram_we),
-      .addr  (ram_addr),
-      .wdata (ram_wdata),
-      .rdata (ram_rdata)
-  );
-
-  // ---- the I/O region -------------------------------------------------------------------
-  assign io_valid = mem_valid && is_io;
-  assign io_addr  = mem_addr;
-  assign io_wdata = mem_wdata;
-  assign io_wstrb = mem_wstrb;
-
-  // ---- reply to the core --------------------------------------------------------------
-  assign mem_ready = is_io ? io_ready : pending;
-  assign mem_rdata = is_io ? io_rdata : (pending_ram ? ram_rdata : 32'd0);
-
-  wire _unused = &{1'b0, ld_addr[31:AW+2], ld_addr[1:0]};
 endmodule

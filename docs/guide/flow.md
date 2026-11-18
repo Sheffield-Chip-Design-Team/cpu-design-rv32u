@@ -6,10 +6,10 @@ This page maps the repository: which files you edit, what each `make` target run
 
 | Path | What | Yours? |
 |---|---|---|
-| `src/hw/rtl/cpu_ss/` | the CPU: `rv32u_cpu_ss` (fixed ports) and the modules you split it into (D7), optional shared types in `rv32u_ctrl.svh` | **yes** |
+| `src/hw/rtl/cpu/` | the CPU: `rv32u_cpu` (fixed ports) and the modules you split it into (D7), optional shared types in `rv32u_ctrl.svh` | **yes** |
 | `src/hw/rtl/io_ss/` | the program loader and the I/O registers (D2-D5) | **yes** |
 | `src/hw/rtl/rv32u_pkg.sv` | encodings, selectors, the memory map | no |
-| `src/hw/rtl/mem_ss/` | the memory subsystem: the bus adapter (provided), your RAM `rv32u_ram.sv` and its size, the `RAM_WORDS` parameter (D1) | the RAM |
+| `src/hw/rtl/mem_ss/` | the memory subsystem: `rv32u_mem_ss` (fixed ports and the `RAM_WORDS` parameter) and everything inside it (D1) | **yes** |
 | `src/hw/pd/wrappers/` | your IHP SRAM macro wrappers, if your RAM uses macros (D1) | **yes** |
 | `src/hw/rtl/rv32u_soc.sv`, `src/hw/pd/tt_um_sharc_rv32u.sv` | the system and the Tiny Tapeout top level | the pin mapping (D5) |
 | `src/config.json`, `src/hw/pd/pdn_cfg.tcl`, `src/hw/pd/sram_bb.sv` | LibreLane hardening configuration, the macros' black boxes | `config.json`'s SRAM entries (D1) |
@@ -62,9 +62,8 @@ uv run fusesoc --cores-root src/hw --cores-root ip \
 | Core | File | Contains |
 |---|---|---|
 | `sharc:rv32u:pkg` | `src/hw/rtl/rv32u_pkg.core` | the package (and your `rv32u_ctrl.svh`) |
-| `sharc:rv32u:cpu_ss` | `src/hw/rtl/cpu_ss/rv32u_cpu_ss.core` | your CPU |
-| `sharc:rv32u:mem_ss` | `src/hw/rtl/mem_ss/rv32u_mem_ss.core` | the bus adapter (and the `RAM_WORDS` parameter) |
-| `sharc:rv32u:ram` | `src/hw/rtl/mem_ss/rv32u_ram.core` | your RAM |
+| `sharc:rv32u:cpu` | `src/hw/rtl/cpu/rv32u_cpu.core` | your CPU |
+| `sharc:rv32u:mem_ss` | `src/hw/rtl/mem_ss/rv32u_mem_ss.core` | your memory subsystem |
 | `sharc:rv32u:wrappers` | `src/hw/pd/wrappers/rv32u_wrappers.core` | your macro wrappers (empty for flip-flops) |
 | `sharc:rv32u:io_ss` | `src/hw/rtl/io_ss/rv32u_io_ss.core` | your loader and I/O |
 | `sharc:rv32u:soc` | `src/hw/rv32u.core` | the system, the Tiny Tapeout top, the macro black boxes, the `lint` target |

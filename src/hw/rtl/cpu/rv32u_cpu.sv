@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-// RV32u CPU subsystem: YOURS TO DESIGN AND IMPLEMENT (spec 04, 05, 06).
+// RV32u CPU: YOURS TO DESIGN AND IMPLEMENT (spec 04, 05, 06).
 //
 // The ports are fixed: rv32u_soc and the tests connect to them. Everything inside is
 // yours, including how you split it into modules (decision D7). Spec chapter 4 suggests
 // a split (register file, ALU, immediate generator, control FSM, datapath), each in its
 // own file in this directory; a single file works too, but is hard to test and to read.
-// Add every file you create to rv32u_cpu_ss.core and to info.yaml source_files.
+// Add every file you create to rv32u_cpu.core and to info.yaml source_files.
 
 `default_nettype none
 
-module rv32u_cpu_ss (
+module rv32u_cpu (
     input  logic        clk,
     input  logic        rst_n,   // synchronous, active low
 
